@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingVertical="@dimen/exercise_gap_small">
+
+    <TextView
+        android:id="@+id/text_exercise_week_day_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/exercise_week_status_loading"
+        android:textSize="@dimen/exercise_week_status_text_size"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/text_exercise_week_day_label"
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/exercise_gap_tiny" />
+
+    <TextView
+        android:id="@+id/text_exercise_week_day_date"
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>

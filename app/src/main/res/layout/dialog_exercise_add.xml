@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/exercise_dialog_padding">
+
+        <TextView
+            style="@style/TextAppearance.HealthApp.CardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/exercise_search_label" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_small"
+            android:hint="@string/exercise_search_hint">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_exercise_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_exercise_clear_search"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="@string/exercise_search_clear" />
+
+        <TextView
+            android:id="@+id/text_exercise_selected_action"
+            style="@style/TextAppearance.HealthApp.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/exercise_selected_none" />
+
+        <TextView
+            android:id="@+id/text_exercise_search_state"
+            style="@style/TextAppearance.HealthApp.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_small"
+            android:text="@string/exercise_search_loading" />
+
+        <LinearLayout
+            android:id="@+id/container_exercise_search_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_small"
+            android:minHeight="@dimen/exercise_search_results_min_height"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/TextAppearance.HealthApp.CardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_medium"
+            android:text="@string/exercise_date_label" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_exercise_dialog_date"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_small"
+            android:text="@string/exercise_date_today_short" />
+
+        <TextView
+            style="@style/TextAppearance.HealthApp.CardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_medium"
+            android:text="@string/exercise_duration_label" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_small"
+            android:hint="@string/exercise_duration_hint">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_exercise_minutes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/text_exercise_estimate"
+            style="@style/TextAppearance.HealthApp.CardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_medium"
+            android:text="@string/exercise_choose_action_for_estimate" />
+
+        <TextView
+            android:id="@+id/text_exercise_dialog_error"
+            style="@style/TextAppearance.HealthApp.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/exercise_gap_small"
+            android:textColor="@color/health_accent_red"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
