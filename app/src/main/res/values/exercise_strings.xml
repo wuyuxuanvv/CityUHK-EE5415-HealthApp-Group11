@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exercise_page_title">Exercise</string>
+    <string name="exercise_today_duration">今日运动时长</string>
+    <string name="exercise_today_calories">预计消耗热量</string>
+    <string name="exercise_unit_min">min</string>
+    <string name="exercise_unit_kcal">kcal</string>
+    <string name="exercise_loading">加载中…</string>
+    <string name="exercise_value_unavailable">—</string>
+    <string name="exercise_read_error_short">读取失败</string>
+    <string name="exercise_cannot_calculate">暂时无法计算</string>
+    <string name="exercise_estimated_label">估算值</string>
+
+    <string name="exercise_week_title">本周运动情况</string>
+    <string name="exercise_week_loading">正在读取本周记录…</string>
+    <string name="exercise_week_completed_days">本周已完成 %1$d 天</string>
+    <string name="exercise_week_goal_loading">周目标加载中…</string>
+    <string name="exercise_week_goal_error">周目标读取失败</string>
+    <string name="exercise_week_goal_unset">周目标未设置</string>
+    <string name="exercise_week_goal_only">周目标：%1$d 天</string>
+    <string name="exercise_week_goal_progress_v2">目标进度：%1$d / %2$d 天</string>
+    <string name="exercise_week_records_note">按实际运动记录日期统计，不代表计划打卡</string>
+    <string name="exercise_week_read_error">本周运动记录读取失败</string>
+    <string name="exercise_week_status_loading">…</string>
+    <string name="exercise_week_status_error">!</string>
+    <string name="exercise_week_status_future">—</string>
+    <string name="exercise_week_status_complete">✓</string>
+    <string name="exercise_week_status_incomplete">○</string>
+    <string-array name="exercise_week_day_labels">
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+        <item>日</item>
+    </string-array>
+    <string name="exercise_week_day_loading_description">周%1$s %2$d 日，加载中</string>
+    <string name="exercise_week_day_error_description">周%1$s %2$d 日，读取失败</string>
+    <string name="exercise_week_day_future_description">周%1$s %2$d 日，未来日期</string>
+    <string name="exercise_week_day_complete_description">周%1$s %2$d 日，已有运动记录</string>
+    <string name="exercise_week_day_incomplete_description">周%1$s %2$d 日，暂无运动记录</string>
+
+    <string name="exercise_records_title">运动记录</string>
+    <string name="exercise_records_loading">正在读取运动记录…</string>
+    <string name="exercise_records_read_error">运动记录读取失败，请稍后重试</string>
+    <string name="exercise_records_empty">该日期还没有运动记录</string>
+    <string name="exercise_date_today_short">今天</string>
+    <string name="exercise_date_today">今天 · %1$s</string>
+    <string name="exercise_unknown_name">运动项目 #%1$d</string>
+    <string name="exercise_record_details">%1$d min · 约 %2$s kcal（估算）</string>
+    <string name="exercise_record_details_unavailable">%1$d min · 热量不可计算</string>
+    <string name="exercise_delete_title">删除运动记录</string>
+    <string name="exercise_delete_message">确定删除“%1$s”这条记录吗？</string>
+    <string name="exercise_delete_confirm">删除</string>
+    <string name="exercise_delete_error">删除失败，请重试</string>
+    <string name="exercise_cancel">取消</string>
+    <string name="exercise_add_record">+ 添加运动记录</string>
+
+    <string name="exercise_add_dialog_title">添加运动记录</string>
+    <string name="exercise_search_label">选择运动动作</string>
+    <string name="exercise_search_hint">搜索运动名称</string>
+    <string name="exercise_search_clear">清空并重新选择</string>
+    <string name="exercise_search_loading">正在加载运动动作…</string>
+    <string name="exercise_search_load_error">运动动作加载失败，暂时无法选择</string>
+    <string name="exercise_library_empty">运动动作库暂无数据</string>
+    <string name="exercise_search_empty">没有找到匹配的运动动作</string>
+    <string name="exercise_search_result_details">%1$s · MET %2$s</string>
+    <string name="exercise_selected_none">尚未选择运动动作</string>
+    <string name="exercise_selected_action">已选择：%1$s · MET %2$s</string>
+    <string name="exercise_date_label">运动日期</string>
+    <string name="exercise_duration_label">运动时长</string>
+    <string name="exercise_duration_hint">分钟，范围 1–600</string>
+    <string name="exercise_weight_loading">正在读取体重，稍候即可估算</string>
+    <string name="exercise_weight_read_error">体重读取失败，暂时无法估算或保存</string>
+    <string name="exercise_need_weight">请先在资料页填写有效体重</string>
+    <string name="exercise_choose_action_for_estimate">选择运动动作后可估算热量</string>
+    <string name="exercise_enter_duration_for_estimate">输入有效时长后可估算热量</string>
+    <string name="exercise_estimate_value">预计消耗约 %1$s kcal（估算）</string>
+    <string name="exercise_error_action_required">请先从搜索结果中选择运动动作</string>
+    <string name="exercise_error_date">运动日期不能晚于今天</string>
+    <string name="exercise_save">保存</string>
+</resources>

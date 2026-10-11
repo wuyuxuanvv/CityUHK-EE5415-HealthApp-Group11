@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="exercise_page_padding">24dp</dimen>
+    <dimen name="exercise_dialog_padding">24dp</dimen>
+    <dimen name="exercise_card_padding">16dp</dimen>
+    <dimen name="exercise_record_padding">14dp</dimen>
+    <dimen name="exercise_search_result_padding">12dp</dimen>
+    <dimen name="exercise_gap_tiny">4dp</dimen>
+    <dimen name="exercise_gap_small">6dp</dimen>
+    <dimen name="exercise_gap_medium">12dp</dimen>
+    <dimen name="exercise_gap_large">16dp</dimen>
+    <dimen name="exercise_unit_bottom_margin">6dp</dimen>
+    <dimen name="exercise_stat_card_min_height">132dp</dimen>
+    <dimen name="exercise_primary_button_height">56dp</dimen>
+    <dimen name="exercise_compact_button_height">40dp</dimen>
+    <dimen name="exercise_search_results_min_height">48dp</dimen>
+    <dimen name="exercise_week_status_text_size">22sp</dimen>
+</resources>
