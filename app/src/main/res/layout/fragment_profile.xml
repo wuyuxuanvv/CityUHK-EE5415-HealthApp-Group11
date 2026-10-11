@@ -121,7 +121,12 @@
                     android:inputType="text"
                     android:maxLength="12"
                     android:visibility="gone" />
-"
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
                     android:text="@string/profile_label_height" />
 
                 <TextView

@@ -43,6 +43,7 @@ public class HomeFragment extends Fragment {
     private TextView netLineText;
     private TextView minutesText;
     private TextView intakeText;
+    private TextView profileHintText;
     private LinearLayout tasksContainer;
     private ImageView catImage;
 
@@ -77,14 +78,15 @@ public class HomeFragment extends Fragment {
         intakeText = view.findViewById(R.id.text_home_intake);
         tasksContainer = view.findViewById(R.id.container_home_tasks);
         catImage = view.findViewById(R.id.image_home_cat);
+        profileHintText = view.findViewById(R.id.text_home_profile_hint);
         repository = HealthRepository.getInstance(requireContext());
 
         dateText.setText(new SimpleDateFormat("M月d日 EEEE", Locale.CHINA).format(new Date()));
 
-        view.findViewById(R.id.button_home_start).setOnClickListener(v -> {
+        profileHintText.setOnClickListener(v -> {
             if (getActivity() != null) {
                 BottomNavigationView nav = getActivity().findViewById(R.id.bottom_navigation);
-                nav.setSelectedItemId(R.id.navigation_exercise);
+                nav.setSelectedItemId(R.id.navigation_profile);
             }
         });
     }
@@ -188,6 +190,16 @@ public class HomeFragment extends Fragment {
         intakeText.setText(formatKcal(todayIntake));
         renderStatus();
         renderTasks();
+        profileHintText.setVisibility(isProfileComplete(profile) ? View.GONE : View.VISIBLE);
+    }
+
+    /** 资料完整性：身高/体重/年龄/每日摄入目标齐全才算完整 */
+    private static boolean isProfileComplete(UserProfile p) {
+        return p != null
+                && p.heightCm > 0
+                && p.weightKg > 0
+                && p.age > 0
+                && p.dailyCalorieGoalKcal > 0;
     }
 
     private void renderStatus() {
