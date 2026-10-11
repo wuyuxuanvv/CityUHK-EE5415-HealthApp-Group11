@@ -23,22 +23,29 @@ public final class PetAnimationController {
     public void startIdle() {
         stop();
         running = true;
-        idleCycle();
+        walkCycle();
     }
 
     private void idleCycle() {
         if (!running) return;
-        if (random.nextBoolean()) {
-            playFrames(0, 3, 350, 2 + random.nextInt(3), this::idleCycle);
-        } else {
-            float start = position;
-            float target = random.nextFloat() * 2 - 1;
-            int pose = target >= start ? 1 : 2;
-            animate(1440, elapsed -> {
-                position = start + (target - start) * elapsed;
-                view.show(pose, Math.min(7, (int) (elapsed * 8)) % 4, position, -1);
-            }, this::idleCycle);
-        }
+        // A short random idle pause always leads to another walk, never endless idle.
+        playFrames(0, 3, 350, 1 + random.nextInt(2), this::walkCycle);
+    }
+
+    private void walkCycle() {
+        if (!running) return;
+        float start = position;
+        // Alternate the two safe endpoints instead of choosing near-identical targets.
+        float target = start <= 0 ? 1f : -1f;
+        int pose = target > start ? 1 : 2;
+        animate(2520, elapsed -> {
+            position = start + (target - start) * elapsed;
+            view.show(pose, Math.min(13, (int) (elapsed * 14)) % 4, position, -1);
+        }, () -> {
+            position = target;
+            view.show(0, 0, position, -1);
+            idleCycle();
+        });
     }
 
     public void playReward(Runnable completed) {
