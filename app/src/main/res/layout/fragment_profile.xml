@@ -102,6 +102,26 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:text="@string/profile_label_nickname" />
+
+                <TextView
+                    android:id="@+id/value_profile_nickname"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_nickname"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_nickname"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:maxLength="12"
+                    android:visibility="gone" />
+"
                     android:text="@string/profile_label_height" />
 
                 <TextView
@@ -229,7 +249,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="@string/profile_label_exercise_goal" />
+                    android:text="@string/profile_label_exercise_goal_v2" />
 
                 <TextView
                     android:id="@+id/value_profile_exercise_goal"
@@ -244,6 +264,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/profile_hint_exercise_goal"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/profile_label_exercise_minutes_goal" />
+
+                <TextView
+                    android:id="@+id/value_profile_exercise_minutes_goal"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_exercise_minutes_goal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_exercise_minutes_goal"
                     android:importantForAutofill="no"
                     android:inputType="number"
                     android:visibility="gone" />
@@ -271,6 +315,48 @@
                     android:importantForAutofill="no"
                     android:inputType="numberDecimal"
                     android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/label_profile_goal_flags"
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/profile_goal_flags_title" />
+
+                <TextView
+                    android:id="@+id/value_profile_goal_flags"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_goals_summary_none" />
+
+                <LinearLayout
+                    android:id="@+id/container_profile_goal_flags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <CheckBox
+                        android:id="@+id/check_profile_goal_general"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_goal_general" />
+
+                    <CheckBox
+                        android:id="@+id/check_profile_goal_fitness"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_goal_fitness" />
+
+                    <CheckBox
+                        android:id="@+id/check_profile_goal_diet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_goal_diet" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

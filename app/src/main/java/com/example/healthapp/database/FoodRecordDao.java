@@ -22,6 +22,9 @@ public interface FoodRecordDao {
     @Query("SELECT COALESCE(SUM(calories_kcal), 0.0) FROM food_records WHERE record_date = :date")
     double getTotalCaloriesByDate(String date);
 
+    @Query("SELECT COUNT(*) FROM food_records WHERE record_date = :date")
+    int countByDate(String date);
+
     @Insert
     long insert(FoodRecord record);
 

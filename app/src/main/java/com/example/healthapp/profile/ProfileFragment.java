@@ -48,7 +48,9 @@ public class ProfileFragment extends Fragment {
     private static final int MIN_AGE = 1;
     private static final int MAX_AGE = 120;
     private static final int MIN_WEEKLY_GOAL = 1;
-    private static final int MAX_WEEKLY_GOAL = 14;
+    private static final int MAX_WEEKLY_GOAL = 7;
+    private static final int MIN_EXERCISE_MINUTES_GOAL = 5;
+    private static final int MAX_EXERCISE_MINUTES_GOAL = 600;
     private static final double MIN_CALORIE_GOAL = 500;
     private static final double MAX_CALORIE_GOAL = 10000;
 
@@ -59,7 +61,9 @@ public class ProfileFragment extends Fragment {
     private EditText heightInput;
     private EditText weightInput;
     private EditText ageInput;
+    private EditText nicknameInput;
     private EditText exerciseGoalInput;
+    private EditText exerciseMinutesGoalInput;
     private EditText calorieGoalInput;
     private RadioGroup genderGroup;
 
@@ -67,8 +71,15 @@ public class ProfileFragment extends Fragment {
     private TextView weightValue;
     private TextView ageValue;
     private TextView genderValue;
+    private TextView nicknameValue;
     private TextView exerciseGoalValue;
+    private TextView exerciseMinutesGoalValue;
     private TextView calorieGoalValue;
+    private TextView goalFlagsValue;
+    private View goalFlagsContainer;
+    private android.widget.CheckBox goalGeneralCheck;
+    private android.widget.CheckBox goalFitnessCheck;
+    private android.widget.CheckBox goalDietCheck;
 
     private View actionsLayout;
     private FrameLayout avatarContainer;
@@ -121,7 +132,9 @@ public class ProfileFragment extends Fragment {
         heightInput = view.findViewById(R.id.input_profile_height);
         weightInput = view.findViewById(R.id.input_profile_weight);
         ageInput = view.findViewById(R.id.input_profile_age);
+        nicknameInput = view.findViewById(R.id.input_profile_nickname);
         exerciseGoalInput = view.findViewById(R.id.input_profile_exercise_goal);
+        exerciseMinutesGoalInput = view.findViewById(R.id.input_profile_exercise_minutes_goal);
         calorieGoalInput = view.findViewById(R.id.input_profile_calorie_goal);
         genderGroup = view.findViewById(R.id.radio_profile_gender);
 
@@ -129,8 +142,15 @@ public class ProfileFragment extends Fragment {
         weightValue = view.findViewById(R.id.value_profile_weight);
         ageValue = view.findViewById(R.id.value_profile_age);
         genderValue = view.findViewById(R.id.value_profile_gender);
+        nicknameValue = view.findViewById(R.id.value_profile_nickname);
         exerciseGoalValue = view.findViewById(R.id.value_profile_exercise_goal);
+        exerciseMinutesGoalValue = view.findViewById(R.id.value_profile_exercise_minutes_goal);
         calorieGoalValue = view.findViewById(R.id.value_profile_calorie_goal);
+        goalFlagsValue = view.findViewById(R.id.value_profile_goal_flags);
+        goalFlagsContainer = view.findViewById(R.id.container_profile_goal_flags);
+        goalGeneralCheck = view.findViewById(R.id.check_profile_goal_general);
+        goalFitnessCheck = view.findViewById(R.id.check_profile_goal_fitness);
+        goalDietCheck = view.findViewById(R.id.check_profile_goal_diet);
 
         actionsLayout = view.findViewById(R.id.layout_profile_actions);
         avatarContainer = view.findViewById(R.id.container_profile_avatar);
@@ -175,28 +195,46 @@ public class ProfileFragment extends Fragment {
             weightValue.setText(R.string.profile_value_not_set);
             ageValue.setText(R.string.profile_value_not_set);
             genderValue.setText(R.string.profile_value_not_set);
+            nicknameValue.setText(R.string.profile_value_not_set);
             exerciseGoalValue.setText(R.string.profile_value_not_set);
+            exerciseMinutesGoalValue.setText(R.string.profile_value_not_set);
             calorieGoalValue.setText(R.string.profile_value_not_set);
+            goalFlagsValue.setText(R.string.profile_goals_summary_none);
             heightInput.setText("");
             weightInput.setText("");
             ageInput.setText("");
+            nicknameInput.setText("");
             exerciseGoalInput.setText("");
+            exerciseMinutesGoalInput.setText("");
             calorieGoalInput.setText("");
             genderGroup.clearCheck();
+            goalGeneralCheck.setChecked(true);
+            goalFitnessCheck.setChecked(false);
+            goalDietCheck.setChecked(false);
             return;
         }
         heightValue.setText(formatNumber(profile.heightCm));
         weightValue.setText(formatNumber(profile.weightKg));
         ageValue.setText(String.valueOf(profile.age));
         genderValue.setText(profile.gender);
+        nicknameValue.setText(profile.nickname.isEmpty()
+                ? getString(R.string.profile_value_not_set) : profile.nickname);
         exerciseGoalValue.setText(String.valueOf(profile.weeklyExerciseGoalCount));
+        exerciseMinutesGoalValue.setText(String.valueOf(profile.dailyExerciseGoalMinutes));
         calorieGoalValue.setText(formatNumber(profile.dailyCalorieGoalKcal));
+        goalFlagsValue.setText(goalFlagsSummary(profile));
 
         heightInput.setText(formatNumber(profile.heightCm));
         weightInput.setText(formatNumber(profile.weightKg));
         ageInput.setText(String.valueOf(profile.age));
+        nicknameInput.setText(profile.nickname);
         exerciseGoalInput.setText(String.valueOf(profile.weeklyExerciseGoalCount));
+        exerciseMinutesGoalInput.setText(String.valueOf(profile.dailyExerciseGoalMinutes));
         calorieGoalInput.setText(formatNumber(profile.dailyCalorieGoalKcal));
+
+        goalGeneralCheck.setChecked(profile.goalGeneralHealth);
+        goalFitnessCheck.setChecked(profile.goalFitness);
+        goalDietCheck.setChecked(profile.goalRegularDiet);
 
         if (getString(R.string.profile_gender_male).equals(profile.gender)) {
             genderGroup.check(R.id.radio_profile_gender_male);
@@ -205,6 +243,27 @@ public class ProfileFragment extends Fragment {
         } else {
             genderGroup.clearCheck();
         }
+    }
+
+    private String goalFlagsSummary(@NonNull UserProfile profile) {
+        StringBuilder builder = new StringBuilder();
+        if (profile.goalGeneralHealth) {
+            builder.append(getString(R.string.profile_goal_general));
+        }
+        if (profile.goalFitness) {
+            if (builder.length() > 0) {
+                builder.append("、");
+            }
+            builder.append(getString(R.string.profile_goal_fitness));
+        }
+        if (profile.goalRegularDiet) {
+            if (builder.length() > 0) {
+                builder.append("、");
+            }
+            builder.append(getString(R.string.profile_goal_diet));
+        }
+        return builder.length() == 0
+                ? getString(R.string.profile_goals_summary_none) : builder.toString();
     }
 
     // ---------- 展示态 / 编辑态切换 ----------
@@ -228,16 +287,22 @@ public class ProfileFragment extends Fragment {
         heightInput.setVisibility(inputVisibility);
         weightInput.setVisibility(inputVisibility);
         ageInput.setVisibility(inputVisibility);
+        nicknameInput.setVisibility(inputVisibility);
         exerciseGoalInput.setVisibility(inputVisibility);
+        exerciseMinutesGoalInput.setVisibility(inputVisibility);
         calorieGoalInput.setVisibility(inputVisibility);
         genderGroup.setVisibility(inputVisibility);
+        goalFlagsContainer.setVisibility(inputVisibility);
 
         heightValue.setVisibility(valueVisibility);
         weightValue.setVisibility(valueVisibility);
         ageValue.setVisibility(valueVisibility);
         genderValue.setVisibility(valueVisibility);
+        nicknameValue.setVisibility(valueVisibility);
         exerciseGoalValue.setVisibility(valueVisibility);
+        exerciseMinutesGoalValue.setVisibility(valueVisibility);
         calorieGoalValue.setVisibility(valueVisibility);
+        goalFlagsValue.setVisibility(valueVisibility);
 
         actionsLayout.setVisibility(editing ? View.VISIBLE : View.GONE);
         avatarHint.setText(editing ? R.string.profile_avatar_hint_edit
@@ -260,13 +325,16 @@ public class ProfileFragment extends Fragment {
         Double weight = readDouble(weightInput, R.string.profile_error_weight,
                 MIN_WEIGHT_KG, MAX_WEIGHT_KG);
         Integer age = readInt(ageInput, R.string.profile_error_age, MIN_AGE, MAX_AGE);
-        Integer exerciseGoal = readInt(exerciseGoalInput, R.string.profile_error_exercise_goal,
+        Integer exerciseGoal = readInt(exerciseGoalInput, R.string.profile_error_exercise_goal_v2,
                 MIN_WEEKLY_GOAL, MAX_WEEKLY_GOAL);
+        Integer exerciseMinutesGoal = readInt(exerciseMinutesGoalInput,
+                R.string.profile_error_exercise_minutes_goal,
+                MIN_EXERCISE_MINUTES_GOAL, MAX_EXERCISE_MINUTES_GOAL);
         Double calorieGoal = readDouble(calorieGoalInput, R.string.profile_error_calorie_goal,
                 MIN_CALORIE_GOAL, MAX_CALORIE_GOAL);
 
         if (height == null || weight == null || age == null
-                || exerciseGoal == null || calorieGoal == null) {
+                || exerciseGoal == null || exerciseMinutesGoal == null || calorieGoal == null) {
             return; // The failing field already shows its error message.
         }
 
@@ -276,8 +344,13 @@ public class ProfileFragment extends Fragment {
         profile.weightKg = weight;
         profile.age = age;
         profile.gender = gender;
+        profile.nickname = nicknameInput.getText().toString().trim();
         profile.weeklyExerciseGoalCount = exerciseGoal;
+        profile.dailyExerciseGoalMinutes = exerciseMinutesGoal;
         profile.dailyCalorieGoalKcal = calorieGoal;
+        profile.goalGeneralHealth = goalGeneralCheck.isChecked();
+        profile.goalFitness = goalFitnessCheck.isChecked();
+        profile.goalRegularDiet = goalDietCheck.isChecked();
 
         repository().saveUserProfile(profile, new RepositoryCallback<Long>() {
             @Override
@@ -431,6 +504,7 @@ public class ProfileFragment extends Fragment {
         weightInput.setError(null);
         ageInput.setError(null);
         exerciseGoalInput.setError(null);
+        exerciseMinutesGoalInput.setError(null);
         calorieGoalInput.setError(null);
     }
 

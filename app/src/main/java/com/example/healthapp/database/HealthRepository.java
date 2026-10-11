@@ -7,6 +7,10 @@ import android.os.Looper;
 import com.example.healthapp.common.DateTimeUtils;
 import com.example.healthapp.common.RepositoryCallback;
 import com.example.healthapp.model.DailyHealthSummary;
+import com.example.healthapp.model.Exercise;
+import com.example.healthapp.model.ExerciseRecord;
+import com.example.healthapp.model.Food;
+import com.example.healthapp.model.FoodRecord;
 import com.example.healthapp.model.UserProfile;
 
 import java.util.ArrayList;
@@ -95,6 +99,71 @@ public final class HealthRepository {
             database.clearAllTables();
             return true;
         }, callback);
+    }
+
+    // ---------- 运动库 / 食物库 ----------
+
+    public void getAllExercises(RepositoryCallback<List<Exercise>> callback) {
+        submit(() -> database.exerciseDao().getAll(), callback);
+    }
+
+    public void getAllFoods(RepositoryCallback<List<Food>> callback) {
+        submit(() -> database.foodDao().getAll(), callback);
+    }
+
+    // ---------- 运动记录 ----------
+
+    public void addExerciseRecord(ExerciseRecord record, RepositoryCallback<Long> callback) {
+        submit(() -> database.exerciseRecordDao().insert(record), callback);
+    }
+
+    public void deleteExerciseRecord(ExerciseRecord record, RepositoryCallback<Integer> callback) {
+        submit(() -> database.exerciseRecordDao().delete(record), callback);
+    }
+
+    public void getExerciseRecordsForDate(String date,
+                                          RepositoryCallback<List<ExerciseRecord>> callback) {
+        submit(() -> database.exerciseRecordDao().getByDate(date), callback);
+    }
+
+    public void getExerciseRecordsInRange(String startDate, String endDate,
+                                          RepositoryCallback<List<ExerciseRecord>> callback) {
+        submit(() -> database.exerciseRecordDao().getByDateRange(startDate, endDate), callback);
+    }
+
+    public void getExerciseMinutesForDate(String date, RepositoryCallback<Integer> callback) {
+        submit(() -> database.exerciseRecordDao().getTotalMinutesByDate(date), callback);
+    }
+
+    /** 区间内有多少天记过运动（本周目标 X/Y 天的分子）。 */
+    public void getDistinctExerciseDaysInRange(String startDate, String endDate,
+                                               RepositoryCallback<Integer> callback) {
+        submit(() -> database.exerciseRecordDao().countDistinctDatesInRange(startDate, endDate),
+                callback);
+    }
+
+    // ---------- 饮食记录 ----------
+
+    public void addFoodRecord(FoodRecord record, RepositoryCallback<Long> callback) {
+        submit(() -> database.foodRecordDao().insert(record), callback);
+    }
+
+    public void deleteFoodRecord(FoodRecord record, RepositoryCallback<Integer> callback) {
+        submit(() -> database.foodRecordDao().delete(record), callback);
+    }
+
+    public void getFoodRecordsForDate(String date,
+                                      RepositoryCallback<List<FoodRecord>> callback) {
+        submit(() -> database.foodRecordDao().getByDate(date), callback);
+    }
+
+    public void getFoodRecordsInRange(String startDate, String endDate,
+                                      RepositoryCallback<List<FoodRecord>> callback) {
+        submit(() -> database.foodRecordDao().getByDateRange(startDate, endDate), callback);
+    }
+
+    public void hasFoodRecordsForDate(String date, RepositoryCallback<Boolean> callback) {
+        submit(() -> database.foodRecordDao().countByDate(date) > 0, callback);
     }
 
     private <T> void submit(Callable<T> task, RepositoryCallback<T> callback) {

@@ -14,4 +14,6 @@
     <color name="health_accent_red">#FF0000</color>
     <color name="health_accent_yellow">#FFCC00</color>
     <color name="health_accent_blue">#0000CC</color>
+    <color name="health_accent_green">#00A651</color>
+    <color name="health_grey_light">#E8E8E8</color>
 </resources>

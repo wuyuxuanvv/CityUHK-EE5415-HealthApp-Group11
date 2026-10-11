@@ -27,6 +27,16 @@ public interface ExerciseRecordDao {
             + "WHERE record_date = :date")
     double getTotalCaloriesByDate(String date);
 
+    /** Total exercise minutes for one day; 0 when no records. */
+    @Query("SELECT COALESCE(SUM(duration_minutes), 0) FROM exercise_records "
+            + "WHERE record_date = :date")
+    int getTotalMinutesByDate(String date);
+
+    /** Distinct days with at least one record in range (for the weekly goal X/Y days). */
+    @Query("SELECT COUNT(DISTINCT record_date) FROM exercise_records "
+            + "WHERE record_date BETWEEN :startDate AND :endDate")
+    int countDistinctDatesInRange(String startDate, String endDate);
+
     @Insert
     long insert(ExerciseRecord record);
 

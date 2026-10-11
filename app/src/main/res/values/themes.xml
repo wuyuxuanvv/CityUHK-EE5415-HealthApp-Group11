@@ -36,6 +36,24 @@
         <item name="android:color">@color/health_primary_container</item>
     </style>
 
+    <!-- 蓝色主按钮（风格稿：首页"开始运动"） -->
+    <style name="Widget.HealthApp.Button.Blue" parent="Widget.HealthApp.Button">
+        <item name="backgroundTint">@color/health_accent_blue</item>
+        <item name="strokeColor">@color/health_accent_blue</item>
+    </style>
+
+    <!-- 红色主按钮（风格稿：运动页"开始运动"） -->
+    <style name="Widget.HealthApp.Button.Red" parent="Widget.HealthApp.Button">
+        <item name="backgroundTint">@color/health_accent_red</item>
+        <item name="strokeColor">@color/health_accent_red</item>
+    </style>
+
+    <!-- 巨型数字（风格稿：32 分钟 / 1,480 千卡） -->
+    <style name="TextAppearance.HealthApp.BigNumber" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:textColor">@color/health_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="TextAppearance.HealthApp.Headline" parent="TextAppearance.Material3.HeadlineMedium">
         <item name="android:textColor">@color/health_text_primary</item>
         <item name="android:textStyle">bold</item>

@@ -24,7 +24,7 @@ import com.example.healthapp.model.UserProfile;
                 Food.class,
                 FoodRecord.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "health_app.db";
@@ -52,6 +52,8 @@ public abstract class AppDatabase extends RoomDatabase {
                                     context.getApplicationContext(),
                                     AppDatabase.class,
                                     DATABASE_NAME)
+                            // 本地完整版（未发布）：结构变更直接重建库，不保留旧数据。
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

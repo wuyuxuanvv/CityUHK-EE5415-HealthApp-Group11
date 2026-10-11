@@ -2,30 +2,21 @@ package com.example.healthapp.common;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 小猫吉祥物的运动 / 进食事件总线（v1.3 新增）。
+ * 小猫吉祥物的运动 / 进食事件通道（v2.0 本地完整版）。
  *
- * <p>分工边界：
- * <ul>
- *   <li><b>F（框架）</b>：只负责提供本总线与首页 {@code container_home_gauge} 挂载点，不实现动画。</li>
- *   <li><b>TODO(E)</b>：实现 {@link CatMascot} 接口（运动→小猫动起来；进食→小猫吃东西），
- *       在首页可见时 {@link #register(CatMascot)}，不可见时 {@link #unregister(CatMascot)}。</li>
- *   <li><b>TODO(A/B)</b>：在运动 / 饮食记录插入数据库成功后调用
- *       {@link #notifyExerciseLogged(double)} / {@link #notifyMealLogged(double)}，
- *       入参为该次记录实际对应的卡路里值（kcal）。</li>
- * </ul>
+ * <p>工作方式：任何模块记录成功后调用 {@link #notifyExerciseLogged(double)} /
+ * {@link #notifyMealLogged(double)}，事件先计入挂起计数；首页小猫在 {@code onResume()}
+ * 时调用 {@link #drainPendingExercise()} / {@link #drainPendingMeal()} 取走并播放对应动画
+ * （播放一次后停止）。这样用户在运动/饮食页记录、再切回首页时动画照样触发。
  *
- * <p>用法（A/B 侧，伪代码）：
- * <pre>
- *   ExerciseRecord r = dao.insert(record);
- *   double kcal = CalorieCalculator.exerciseKcal(r.type, r.minutes, userProfile.weightKg);
- *   CatInteractionHub.notifyExerciseLogged(kcal);
- * </pre>
+ * <p>保留了 register/unregister 监听接口供将来扩展；当前首页用挂起计数即可。
  */
 public final class CatInteractionHub {
 
-    /** 监听小猫事件的吉祥物实现（由 E 实现）。 */
+    /** 监听小猫事件的吉祥物实现（可选扩展用）。 */
     public interface CatMascot {
         /** 用户记录了一次运动：小猫应该“动起来”。 */
         void onExerciseLogged(double kcalBurned);
@@ -35,34 +26,48 @@ public final class CatInteractionHub {
     }
 
     private static final List<CatMascot> listeners = new CopyOnWriteArrayList<>();
+    private static final AtomicInteger pendingExercise = new AtomicInteger();
+    private static final AtomicInteger pendingMeal = new AtomicInteger();
 
     private CatInteractionHub() {
         // 工具类，禁止实例化
     }
 
-    /** 吉祥物可见时注册（E 在首页 onStart / onResume 调用）。 */
+    /** 吉祥物可见时注册（扩展用）。 */
     public static void register(CatMascot mascot) {
         if (mascot != null && !listeners.contains(mascot)) {
             listeners.add(mascot);
         }
     }
 
-    /** 吉祥物不可见时注销（E 在首页 onStop / onPause 调用）。 */
+    /** 吉祥物不可见时注销（扩展用）。 */
     public static void unregister(CatMascot mascot) {
         listeners.remove(mascot);
     }
 
-    /** A 同学：运动记录写入成功后调用。 */
+    /** 运动记录写入成功后调用（A/运动页）。 */
     public static void notifyExerciseLogged(double kcalBurned) {
+        pendingExercise.incrementAndGet();
         for (CatMascot m : listeners) {
             m.onExerciseLogged(kcalBurned);
         }
     }
 
-    /** B 同学：饮食记录写入成功后调用。 */
+    /** 饮食记录写入成功后调用（B/饮食页）。 */
     public static void notifyMealLogged(double kcalIntake) {
+        pendingMeal.incrementAndGet();
         for (CatMascot m : listeners) {
             m.onMealLogged(kcalIntake);
         }
+    }
+
+    /** 首页取走挂起的运动事件数量（取走后清零）。 */
+    public static int drainPendingExercise() {
+        return pendingExercise.getAndSet(0);
+    }
+
+    /** 首页取走挂起的进食事件数量（取走后清零）。 */
+    public static int drainPendingMeal() {
+        return pendingMeal.getAndSet(0);
     }
 }

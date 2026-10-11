@@ -11,9 +11,10 @@ import com.example.healthapp.exercise.ExerciseFragment;
 import com.example.healthapp.database.SeedData;
 import com.example.healthapp.home.HomeFragment;
 import com.example.healthapp.profile.ProfileFragment;
+import com.example.healthapp.summary.SummaryFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-/** Hosts the four top-level fragments. Business logic belongs in each module package. */
+/** Hosts the five top-level fragments. Business logic belongs in each module package. */
 public class MainActivity extends AppCompatActivity {
     private static final String STATE_SELECTED_ITEM = "selected_navigation_item";
 
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
             fragment = new ExerciseFragment();
         } else if (itemId == R.id.navigation_diet) {
             fragment = new DietFragment();
+        } else if (itemId == R.id.navigation_summary) {
+            fragment = new SummaryFragment();
         } else if (itemId == R.id.navigation_profile) {
             fragment = new ProfileFragment();
         } else {
