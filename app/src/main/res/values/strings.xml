@@ -42,6 +42,13 @@
     <string name="profile_label_calorie_goal">每日摄入目标（kcal）</string>
     <string name="profile_hint_calorie_goal">例如：2000</string>
     <string name="profile_save">保存</string>
+    <string name="profile_edit">修改</string>
+    <string name="profile_cancel">取消</string>
+    <string name="profile_value_not_set">未填写</string>
+    <string name="profile_avatar_hint_view">头像</string>
+    <string name="profile_avatar_hint_edit">点我上传头像</string>
+    <string name="profile_avatar_updated">头像已更新</string>
+    <string name="profile_avatar_error">头像保存失败，请重试</string>
     <string name="profile_saved">资料已保存</string>
     <string name="profile_save_error">保存失败，请重试</string>
     <string name="profile_load_error">资料读取失败</string>
