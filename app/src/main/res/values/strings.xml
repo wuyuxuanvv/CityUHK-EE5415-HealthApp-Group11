@@ -74,6 +74,7 @@
     <string name="home_task_diet">记录今日饮食</string>
     <string name="home_task_calorie">摄入未超目标</string>
     <string name="home_start_exercise">▶  开始运动</string>
+    <string name="home_profile_incomplete_hint">请前往资料页完善信息 ›</string>
     <string name="home_status_good">状态良好，继续保持</string>
     <string name="home_status_warning">接近上限，注意控制</string>
     <string name="home_status_over">已超出今日目标</string>
