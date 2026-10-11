@@ -9,14 +9,31 @@
         <item name="android:navigationBarColor">@color/health_surface</item>
         <item name="android:statusBarColor">@color/health_background</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="materialButtonStyle">@style/Widget.HealthApp.Button</item>
     </style>
 
+    <!-- 新粗野主义卡片：白底、纯黑粗边框、直角、无圆角 -->
     <style name="Widget.HealthApp.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="cardBackgroundColor">@color/health_surface</item>
-        <item name="cardCornerRadius">18dp</item>
-        <item name="cardElevation">1dp</item>
+        <item name="cardCornerRadius">0dp</item>
+        <item name="cardElevation">3dp</item>
         <item name="strokeColor">@color/health_outline</item>
-        <item name="strokeWidth">1dp</item>
+        <item name="strokeWidth">2.5dp</item>
+    </style>
+
+    <!-- 新粗野主义按钮：纯黑底、白字、粗体、直角黑边 -->
+    <style name="Widget.HealthApp.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/health_primary</item>
+        <item name="android:textColor">@color/health_on_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">0dp</item>
+        <item name="strokeColor">@color/health_primary</item>
+        <item name="strokeWidth">2dp</item>
+    </style>
+
+    <!-- 底部导航选中指示块：黄色直角 -->
+    <style name="Widget.HealthApp.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/health_primary_container</item>
     </style>
 
     <style name="TextAppearance.HealthApp.Headline" parent="TextAppearance.Material3.HeadlineMedium">
@@ -33,8 +50,9 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextAppearance.HealthApp.CardValue" parent="TextAppearance.Material3.BodyLarge">
-        <item name="android:textColor">@color/health_primary</item>
+    <style name="TextAppearance.HealthApp.CardValue" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">@color/health_text_primary</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="TextAppearance.HealthApp.Placeholder" parent="TextAppearance.Material3.BodyLarge">

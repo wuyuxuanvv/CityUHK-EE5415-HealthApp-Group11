@@ -16,7 +16,7 @@
     <string name="home_load_error">暂时无法读取数据</string>
     <string name="home_exercise_count">已完成 %1$d 次运动</string>
     <string name="home_calorie_total">%1$s kcal</string>
-    <string name="home_gauge_placeholder_desc">卡路里量尺示意图（临时占位，将由实时量尺替换）</string>
+    <string name="home_cat_desc">小猫状态：运动让它动起来，进食让它吃东西（动画接口已预留）</string>
 
     <string name="exercise_title">运动</string>
     <string name="exercise_description">记录实际运动，并单独管理每周计划和打卡。</string>
