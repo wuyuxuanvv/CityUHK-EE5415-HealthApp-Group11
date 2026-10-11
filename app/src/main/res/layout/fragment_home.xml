@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -15,97 +14,182 @@
             style="@style/TextAppearance.HealthApp.Headline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/home_title" />
+            android:text="@string/home_title_v2" />
 
         <TextView
+            android:id="@+id/text_home_date"
             style="@style/TextAppearance.HealthApp.Body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/home_subtitle" />
+            android:layout_marginTop="4dp" />
 
-        <com.google.android.material.card.MaterialCardView
-            style="@style/Widget.HealthApp.Card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <TextView
-                    style="@style/TextAppearance.HealthApp.CardTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/home_exercise_label" />
-
-                <TextView
-                    android:id="@+id/text_home_exercise_value"
-                    style="@style/TextAppearance.HealthApp.CardValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/home_loading" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
+        <!-- 小猫状态块（替代风格稿黄色大卡）：白底粗黑边框 -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.HealthApp.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/text_home_status"
                     style="@style/TextAppearance.HealthApp.CardTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/home_calorie_label" />
+                    android:text="@string/home_status_no_record" />
+
+                <!-- 挂载点 id 冻结：E 的小猫动画替换此容器内容 -->
+                <FrameLayout
+                    android:id="@+id/container_home_gauge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:id="@+id/image_home_cat"
+                        android:layout_width="240dp"
+                        android:layout_height="240dp"
+                        android:layout_gravity="center"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@string/home_cat_desc"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/cat_home" />
+                </FrameLayout>
 
                 <TextView
-                    android:id="@+id/text_home_calorie_value"
-                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:id="@+id/text_home_net_line"
+                    style="@style/TextAppearance.HealthApp.Body"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/home_loading" />
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 运动 / 摄入 双栏 -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.HealthApp.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance.HealthApp.Body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/exercise_today_minutes" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/text_home_minutes"
+                            style="@style/TextAppearance.HealthApp.BigNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            style="@style/TextAppearance.HealthApp.Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginBottom="4dp"
+                            android:text="@string/home_minutes_unit" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="64dp"
+                    android:background="@color/health_outline" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance.HealthApp.Body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/summary_grid_intake" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/text_home_intake"
+                            style="@style/TextAppearance.HealthApp.BigNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            style="@style/TextAppearance.HealthApp.Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginBottom="4dp"
+                            android:text="@string/home_kcal_unit" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 今日任务 -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.HealthApp.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:id="@+id/container_home_tasks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="16dp">
 
                 <TextView
                     style="@style/TextAppearance.HealthApp.CardTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/home_sleep_label" />
-
-                <TextView
-                    android:id="@+id/text_home_sleep_value"
-                    style="@style/TextAppearance.HealthApp.CardValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/home_loading" />
+                    android:text="@string/home_task_title" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_home_start"
+            style="@style/Widget.HealthApp.Button.Blue"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/home_start_exercise"
+            android:textSize="18sp" />
     </LinearLayout>
 </ScrollView>

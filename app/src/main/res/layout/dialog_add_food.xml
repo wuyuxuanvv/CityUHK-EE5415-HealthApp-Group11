@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/diet_label_meal" />
+
+    <RadioGroup
+        android:id="@+id/radio_diet_meal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radio_diet_breakfast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/diet_meal_breakfast" />
+
+        <RadioButton
+            android:id="@+id/radio_diet_lunch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/diet_meal_lunch" />
+
+        <RadioButton
+            android:id="@+id/radio_diet_dinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/diet_meal_dinner" />
+
+        <RadioButton
+            android:id="@+id/radio_diet_snack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/diet_meal_snack" />
+    </RadioGroup>
+
+    <TextView
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/diet_label_food" />
+
+    <Spinner
+        android:id="@+id/spinner_diet_food"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/diet_label_grams" />
+
+    <EditText
+        android:id="@+id/input_diet_grams"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/diet_hint_grams"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal" />
+
+    <TextView
+        android:id="@+id/text_diet_estimate"
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp" />
+</LinearLayout>

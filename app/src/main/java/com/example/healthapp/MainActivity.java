@@ -8,9 +8,10 @@ import androidx.fragment.app.Fragment;
 
 import com.example.healthapp.diet.DietFragment;
 import com.example.healthapp.exercise.ExerciseFragment;
+import com.example.healthapp.database.SeedData;
 import com.example.healthapp.home.HomeFragment;
 import com.example.healthapp.profile.ProfileFragment;
-import com.example.healthapp.sleep.SleepFragment;
+import com.example.healthapp.summary.SummaryFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /** Hosts the five top-level fragments. Business logic belongs in each module package. */
@@ -24,6 +25,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Fill the built-in exercise/food libraries once per install (async, no-op when done).
+        SeedData.seedIfEmpty(this);
 
         bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.setOnItemSelectedListener(item -> {
@@ -52,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
             fragment = new ExerciseFragment();
         } else if (itemId == R.id.navigation_diet) {
             fragment = new DietFragment();
-        } else if (itemId == R.id.navigation_sleep) {
-            fragment = new SleepFragment();
+        } else if (itemId == R.id.navigation_summary) {
+            fragment = new SummaryFragment();
         } else if (itemId == R.id.navigation_profile) {
             fragment = new ProfileFragment();
         } else {

@@ -23,18 +23,367 @@
             android:layout_marginTop="6dp"
             android:text="@string/profile_description" />
 
+        <!-- 基本信息档案卡：默认只读展示，点右上角"修改"进入编辑态 -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.HealthApp.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp">
 
-            <TextView
-                style="@style/TextAppearance.HealthApp.Placeholder"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:text="@string/profile_pending" />
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/TextAppearance.HealthApp.CardTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/profile_section_basic" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_profile_edit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_edit" />
+                </LinearLayout>
+
+                <!-- 头像位：预留上传入口；编辑态点击可从相册选择 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/container_profile_avatar"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:background="@drawable/profile_avatar_frame">
+
+                        <ImageView
+                            android:id="@+id/image_profile_avatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="@string/profile_avatar_hint_view"
+                            android:scaleType="centerCrop" />
+
+                        <TextView
+                            android:id="@+id/text_profile_avatar_empty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="@string/profile_avatar_hint_view"
+                            android:textColor="@color/health_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/text_profile_avatar_hint"
+                        style="@style/TextAppearance.HealthApp.Body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/profile_avatar_hint_view" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/profile_label_nickname" />
+
+                <TextView
+                    android:id="@+id/value_profile_nickname"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_nickname"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_nickname"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:maxLength="12"
+                    android:visibility="gone" />
+"
+                    android:text="@string/profile_label_height" />
+
+                <TextView
+                    android:id="@+id/value_profile_height"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_height"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/profile_label_weight" />
+
+                <TextView
+                    android:id="@+id/value_profile_weight"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_weight"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/profile_label_age" />
+
+                <TextView
+                    android:id="@+id/value_profile_age"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_age"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_age"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/profile_label_gender" />
+
+                <TextView
+                    android:id="@+id/value_profile_gender"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <RadioGroup
+                    android:id="@+id/radio_profile_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <RadioButton
+                        android:id="@+id/radio_profile_gender_male"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_gender_male" />
+
+                    <RadioButton
+                        android:id="@+id/radio_profile_gender_female"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_gender_female" />
+                </RadioGroup>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- 健康目标档案卡 -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.HealthApp.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.CardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_section_goals" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/profile_label_exercise_goal_v2" />
+
+                <TextView
+                    android:id="@+id/value_profile_exercise_goal"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_exercise_goal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_exercise_goal"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/profile_label_exercise_minutes_goal" />
+
+                <TextView
+                    android:id="@+id/value_profile_exercise_minutes_goal"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_exercise_minutes_goal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_exercise_minutes_goal"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/profile_label_calorie_goal" />
+
+                <TextView
+                    android:id="@+id/value_profile_calorie_goal"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_value_not_set" />
+
+                <EditText
+                    android:id="@+id/input_profile_calorie_goal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/profile_hint_calorie_goal"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/label_profile_goal_flags"
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/profile_goal_flags_title" />
+
+                <TextView
+                    android:id="@+id/value_profile_goal_flags"
+                    style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/profile_goals_summary_none" />
+
+                <LinearLayout
+                    android:id="@+id/container_profile_goal_flags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <CheckBox
+                        android:id="@+id/check_profile_goal_general"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_goal_general" />
+
+                    <CheckBox
+                        android:id="@+id/check_profile_goal_fitness"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_goal_fitness" />
+
+                    <CheckBox
+                        android:id="@+id/check_profile_goal_diet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_goal_diet" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 编辑态操作按钮：仅"修改"模式可见 -->
+        <LinearLayout
+            android:id="@+id/layout_profile_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_profile_cancel"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="@string/profile_cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_profile_save"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/profile_save" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

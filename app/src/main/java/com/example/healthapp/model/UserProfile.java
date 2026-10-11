@@ -24,12 +24,25 @@ public class UserProfile {
     @NonNull
     public String gender = "";
 
+    /** 展示昵称，可为空串。 */
+    @NonNull
+    public String nickname = "";
+
     @ColumnInfo(name = "weekly_exercise_goal_count")
     public int weeklyExerciseGoalCount;
 
     @ColumnInfo(name = "daily_calorie_goal_kcal")
     public double dailyCalorieGoalKcal;
 
-    @ColumnInfo(name = "daily_sleep_goal_minutes")
-    public int dailySleepGoalMinutes;
+    @ColumnInfo(name = "daily_exercise_goal_minutes")
+    public int dailyExerciseGoalMinutes = 30;
+
+    @ColumnInfo(name = "goal_general_health")
+    public boolean goalGeneralHealth = true;
+
+    @ColumnInfo(name = "goal_fitness")
+    public boolean goalFitness;
+
+    @ColumnInfo(name = "goal_regular_diet")
+    public boolean goalRegularDiet;
 }

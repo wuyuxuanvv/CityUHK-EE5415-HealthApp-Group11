@@ -1,8 +1,6 @@
 package com.example.healthapp.common;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -26,25 +24,6 @@ public final class DateTimeUtils {
 
     public static LocalDate parseDate(String date) throws DateTimeParseException {
         return LocalDate.parse(date, DATE_FORMATTER);
-    }
-
-    public static String dateFromEpochMillis(long epochMillis) {
-        return formatDate(Instant.ofEpochMilli(epochMillis)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate());
-    }
-
-    public static int calculateDurationMinutes(long startEpochMillis, long endEpochMillis) {
-        if (endEpochMillis <= startEpochMillis) {
-            throw new IllegalArgumentException("Wake time must be after sleep time");
-        }
-        long minutes = ChronoUnit.MINUTES.between(
-                Instant.ofEpochMilli(startEpochMillis),
-                Instant.ofEpochMilli(endEpochMillis));
-        if (minutes > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Duration is too large");
-        }
-        return (int) minutes;
     }
 
     public static List<String> datesBetweenInclusive(String startDate, String endDate) {

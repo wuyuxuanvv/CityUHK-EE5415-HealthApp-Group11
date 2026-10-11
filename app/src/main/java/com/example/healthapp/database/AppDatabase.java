@@ -12,7 +12,6 @@ import com.example.healthapp.model.ExercisePlan;
 import com.example.healthapp.model.ExerciseRecord;
 import com.example.healthapp.model.Food;
 import com.example.healthapp.model.FoodRecord;
-import com.example.healthapp.model.SleepRecord;
 import com.example.healthapp.model.UserProfile;
 
 @Database(
@@ -23,10 +22,9 @@ import com.example.healthapp.model.UserProfile;
                 ExercisePlan.class,
                 ExerciseCheckIn.class,
                 Food.class,
-                FoodRecord.class,
-                SleepRecord.class
+                FoodRecord.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "health_app.db";
@@ -46,8 +44,6 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract FoodRecordDao foodRecordDao();
 
-    public abstract SleepRecordDao sleepRecordDao();
-
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -56,6 +52,8 @@ public abstract class AppDatabase extends RoomDatabase {
                                     context.getApplicationContext(),
                                     AppDatabase.class,
                                     DATABASE_NAME)
+                            // 本地完整版（未发布）：结构变更直接重建库，不保留旧数据。
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

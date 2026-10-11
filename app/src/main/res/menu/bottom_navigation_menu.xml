@@ -13,9 +13,9 @@
         android:icon="@drawable/ic_nav_diet"
         android:title="@string/nav_diet" />
     <item
-        android:id="@+id/navigation_sleep"
-        android:icon="@drawable/ic_nav_sleep"
-        android:title="@string/nav_sleep" />
+        android:id="@+id/navigation_summary"
+        android:icon="@drawable/ic_nav_summary"
+        android:title="@string/nav_summary" />
     <item
         android:id="@+id/navigation_profile"
         android:icon="@drawable/ic_nav_profile"

@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="health_primary">#2E7D6B</color>
-    <color name="health_primary_container">#CDEDE4</color>
+    <!-- v1.3 新粗野主义配色：色号来自组内设计参考（Primary #000000 / Secondary #FFFFFF / Accent 红 #FF0000 / 黄 #FFCC00），蓝色取自风格稿。
+         令牌名保持不动——所有引用处零改动。 -->
+    <color name="health_primary">#000000</color>
+    <color name="health_primary_container">#FFCC00</color>
     <color name="health_on_primary">#FFFFFF</color>
-    <color name="health_background">#F6FAF8</color>
+    <color name="health_background">#FFFFFF</color>
     <color name="health_surface">#FFFFFF</color>
-    <color name="health_text_primary">#17332C</color>
-    <color name="health_text_secondary">#52655F</color>
-    <color name="health_outline">#D8E2DE</color>
-    <color name="health_navigation_inactive">#65736F</color>
+    <color name="health_text_primary">#000000</color>
+    <color name="health_text_secondary">#000000</color>
+    <color name="health_outline">#000000</color>
+    <color name="health_navigation_inactive">#000000</color>
+    <color name="health_accent_red">#FF0000</color>
+    <color name="health_accent_yellow">#FFCC00</color>
+    <color name="health_accent_blue">#0000CC</color>
+    <color name="health_accent_green">#00A651</color>
+    <color name="health_grey_light">#E8E8E8</color>
 </resources>
