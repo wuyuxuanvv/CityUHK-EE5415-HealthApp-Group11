@@ -70,16 +70,23 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
 
-                    <ImageView
+                    <com.example.healthapp.home.pet.PetView
                         android:id="@+id/image_home_cat"
-                        android:layout_width="240dp"
-                        android:layout_height="240dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/home_cat_pet_height"
                         android:layout_gravity="center"
-                        android:adjustViewBounds="true"
-                        android:contentDescription="@string/home_cat_desc"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/cat_home" />
+                        android:contentDescription="@string/home_cat_pet_desc" />
                 </FrameLayout>
+
+                <TextView
+                    android:id="@+id/text_home_pet_status"
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/home_cat_pet_status_gap"
+                    android:gravity="center"
+                    android:accessibilityLiveRegion="polite"
+                    android:text="@string/home_cat_pet_loading" />
 
                 <TextView
                     android:id="@+id/text_home_net_line"

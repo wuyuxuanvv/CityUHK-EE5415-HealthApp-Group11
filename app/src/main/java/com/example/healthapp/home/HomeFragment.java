@@ -1,13 +1,11 @@
 package com.example.healthapp.home;
 
-import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -22,6 +20,8 @@ import com.example.healthapp.common.CatInteractionHub;
 import com.example.healthapp.common.DateTimeUtils;
 import com.example.healthapp.common.RepositoryCallback;
 import com.example.healthapp.database.HealthRepository;
+import com.example.healthapp.home.pet.PetManager;
+import com.example.healthapp.home.pet.PetView;
 import com.example.healthapp.model.UserProfile;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -31,12 +31,9 @@ import java.util.Locale;
 
 /**
  * 今日健康首页（v2.0）：小猫状态块 + 运动/摄入双栏 + 今日任务 + 开始运动。
- * 所有数字均来自 Room；小猫动画播放一次后自动回到静态图。
+ * 所有数字均来自 Room；宠物模块独立管理循环待机和每日奖励。
  */
-public class HomeFragment extends Fragment {
-
-    private static final long FRAME_MS = 130;
-    private static final int FRAME_COUNT = 6;
+public class HomeFragment extends Fragment implements CatInteractionHub.CatMascot {
 
     private TextView dateText;
     private TextView statusText;
@@ -45,7 +42,11 @@ public class HomeFragment extends Fragment {
     private TextView intakeText;
     private TextView profileHintText;
     private LinearLayout tasksContainer;
-    private ImageView catImage;
+    private PetManager petManager;
+    private int loadGeneration;
+    private String loadedDate;
+    private boolean intakeReady;
+    private boolean burnReady;
 
     private HealthRepository repository;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -77,7 +78,9 @@ public class HomeFragment extends Fragment {
         minutesText = view.findViewById(R.id.text_home_minutes);
         intakeText = view.findViewById(R.id.text_home_intake);
         tasksContainer = view.findViewById(R.id.container_home_tasks);
-        catImage = view.findViewById(R.id.image_home_cat);
+        petManager = new PetManager(requireContext(),
+                (PetView) view.findViewById(R.id.image_home_cat),
+                view.findViewById(R.id.text_home_pet_status));
         profileHintText = view.findViewById(R.id.text_home_profile_hint);
         repository = HealthRepository.getInstance(requireContext());
 
@@ -94,23 +97,53 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        petManager.start();
+        CatInteractionHub.register(this);
+        CatInteractionHub.drainPendingExercise();
+        CatInteractionHub.drainPendingMeal();
         loadAll();
-        int run = CatInteractionHub.drainPendingExercise();
-        int eat = CatInteractionHub.drainPendingMeal();
-        if (run > 0) {
-            playCatAnimation(R.drawable.cat_run_anim);
-            if (eat > 0) {
-                handler.postDelayed(() -> playCatAnimation(R.drawable.cat_eat_anim),
-                        FRAME_MS * FRAME_COUNT + 250);
-            }
-        } else if (eat > 0) {
-            playCatAnimation(R.drawable.cat_eat_anim);
+        handler.postDelayed(dayCheck, 30_000);
+    }
+
+    private final Runnable dayCheck = new Runnable() {
+        @Override public void run() {
+            if (!isResumed() || petManager == null) return;
+            if (!DateTimeUtils.today().equals(loadedDate)) loadAll();
+            handler.postDelayed(this, 30_000);
         }
+    };
+
+    @Override
+    public void onExerciseLogged(double kcalBurned) {
+        refreshFromEvent();
+    }
+
+    @Override
+    public void onMealLogged(double kcalIntake) {
+        refreshFromEvent();
+    }
+
+    private void refreshFromEvent() {
+        handler.post(() -> {
+            if (isResumed() && petManager != null) loadAll();
+        });
+    }
+
+    @Override
+    public void onPause() {
+        CatInteractionHub.unregister(this);
+        loadGeneration++;
+        handler.removeCallbacksAndMessages(null);
+        if (petManager != null) petManager.stop();
+        super.onPause();
     }
 
     @Override
     public void onDestroyView() {
         handler.removeCallbacksAndMessages(null);
+        loadGeneration++;
+        if (petManager != null) petManager.stop();
+        petManager = null;
         super.onDestroyView();
     }
 
@@ -118,63 +151,93 @@ public class HomeFragment extends Fragment {
 
     private void loadAll() {
         String today = DateTimeUtils.today();
+        loadedDate = today;
+        final int generation = ++loadGeneration;
+        intakeReady = false;
+        burnReady = false;
+        petManager.loading();
+        dateText.setText(new SimpleDateFormat("M月d日 EEEE", Locale.CHINA).format(new Date()));
         repository.getUserProfile(new RepositoryCallback<UserProfile>() {
             @Override
             public void onSuccess(UserProfile result) {
+                if (!isCurrentLoad(generation, today)) return;
                 profile = result;
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
+                if (!isCurrentLoad(generation, today)) return;
                 render();
             }
         });
         repository.getExerciseMinutesForDate(today, new RepositoryCallback<Integer>() {
             @Override
             public void onSuccess(Integer result) {
+                if (!isCurrentLoad(generation, today)) return;
                 todayMinutes = result == null ? 0 : result;
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
+                if (!isCurrentLoad(generation, today)) return;
                 render();
             }
         });
         repository.getTotalCaloriesForDate(today, new RepositoryCallback<Double>() {
             @Override
             public void onSuccess(Double result) {
-                todayIntake = result == null ? 0 : result;
+                if (!isCurrentLoad(generation, today)) return;
+                if (result == null || !Double.isFinite(result) || result < 0) {
+                    petManager.error();
+                    return;
+                }
+                todayIntake = result;
+                intakeReady = true;
+                updatePet(today);
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
+                if (!isCurrentLoad(generation, today)) return;
+                petManager.error();
                 render();
             }
         });
         repository.getTotalExerciseCaloriesForDate(today, new RepositoryCallback<Double>() {
             @Override
             public void onSuccess(Double result) {
-                todayBurn = result == null ? 0 : result;
+                if (!isCurrentLoad(generation, today)) return;
+                if (result == null || !Double.isFinite(result) || result < 0) {
+                    petManager.error();
+                    return;
+                }
+                todayBurn = result;
+                burnReady = true;
+                updatePet(today);
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
+                if (!isCurrentLoad(generation, today)) return;
+                petManager.error();
                 render();
             }
         });
         repository.hasFoodRecordsForDate(today, new RepositoryCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
+                if (!isCurrentLoad(generation, today)) return;
                 todayHasFood = Boolean.TRUE.equals(result);
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
+                if (!isCurrentLoad(generation, today)) return;
                 render();
             }
         });
@@ -182,8 +245,19 @@ public class HomeFragment extends Fragment {
 
     // ---------- 渲染 ----------
 
+    private boolean isCurrentLoad(int generation, String date) {
+        return generation == loadGeneration && isResumed() && getView() != null
+                && DateTimeUtils.today().equals(date);
+    }
+
+    private void updatePet(String date) {
+        if (intakeReady && burnReady && petManager != null) {
+            petManager.update(date, todayIntake, todayBurn);
+        }
+    }
+
     private void render() {
-        if (!isAdded()) {
+        if (!isAdded() || getView() == null) {
             return;
         }
         minutesText.setText(String.format(Locale.getDefault(), "%,d", todayMinutes));
@@ -281,26 +355,6 @@ public class HomeFragment extends Fragment {
         row.addView(state);
 
         tasksContainer.addView(row);
-    }
-
-    // ---------- 小猫动画 ----------
-
-    private void playCatAnimation(int animRes) {
-        if (!isAdded() || catImage == null) {
-            return;
-        }
-        catImage.setImageResource(animRes);
-        AnimationDrawable animation = (AnimationDrawable) catImage.getDrawable();
-        animation.setOneShot(true);
-        animation.start();
-        handler.postDelayed(this::resetCat, FRAME_MS * FRAME_COUNT + 150);
-    }
-
-    private void resetCat() {
-        if (isAdded() && catImage != null) {
-            catImage.setImageResource(R.drawable.cat_home);
-            loadAll(); // 动画播完刷新数字
-        }
     }
 
     // ---------- 工具 ----------

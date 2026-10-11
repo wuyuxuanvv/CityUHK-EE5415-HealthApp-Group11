@@ -1,0 +1,49 @@
+{
+  "idle": {
+    "files": [
+      "cat_idle_1.png",
+      "cat_idle_2.png",
+      "cat_idle_3.png"
+    ],
+    "loop": true,
+    "frame_ms": 350
+  },
+  "walk": {
+    "files": [
+      "cat_walk_1.png",
+      "cat_walk_2.png",
+      "cat_walk_3.png",
+      "cat_walk_4.png"
+    ],
+    "loop": true,
+    "frame_ms": 180
+  },
+  "walk_left": {
+    "files": [
+      "cat_walk_left_1.png",
+      "cat_walk_left_2.png",
+      "cat_walk_left_3.png",
+      "cat_walk_left_4.png"
+    ],
+    "loop": true,
+    "frame_ms": 180
+  },
+  "eat": {
+    "files": [
+      "cat_eat_1.png",
+      "cat_eat_2.png",
+      "cat_eat_3.png"
+    ],
+    "loop": false,
+    "frame_ms": 350
+  },
+  "happy": {
+    "files": [
+      "cat_happy_1.png",
+      "cat_happy_2.png",
+      "cat_happy_3.png"
+    ],
+    "loop": false,
+    "frame_ms": 220
+  }
+}
