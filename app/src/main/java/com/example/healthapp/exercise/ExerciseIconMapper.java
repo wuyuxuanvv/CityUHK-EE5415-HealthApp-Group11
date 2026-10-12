@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.example.healthapp.R;
 
-/** Static icons for the ten named aerobic exercises; 0 means no icon. */
+/** Static icons for the named exercise dictionary entries; 0 means no icon. */
 final class ExerciseIconMapper {
     private ExerciseIconMapper() {
     }
@@ -34,6 +34,31 @@ final class ExerciseIconMapper {
                 return R.drawable.exercise_icon_jump_rope;
             case "骑行":
                 return R.drawable.exercise_icon_cycling;
+            case "羽毛球":
+                return R.drawable.exercise_icon_badminton;
+            case "篮球":
+                return R.drawable.exercise_icon_basketball;
+            case "足球":
+                return R.drawable.exercise_icon_soccer;
+            case "乒乓球":
+                return R.drawable.exercise_icon_ping_pong;
+            case "网球":
+                return R.drawable.exercise_icon_tennis;
+            case "排球":
+                return R.drawable.exercise_icon_volleyball;
+            case "瑜伽":
+                return R.drawable.exercise_icon_yoga;
+            case "普拉提":
+                return R.drawable.exercise_icon_pilates;
+            case "HIIT 间歇训练":
+                return R.drawable.exercise_icon_hiit;
+            case "低强度":
+            case "中等强度":
+            case "高强度":
+            case "力量训练（低强度）":
+            case "力量训练（中强度）":
+            case "力量训练（高强度）":
+                return R.drawable.exercise_icon_strength;
             default:
                 return 0;
         }

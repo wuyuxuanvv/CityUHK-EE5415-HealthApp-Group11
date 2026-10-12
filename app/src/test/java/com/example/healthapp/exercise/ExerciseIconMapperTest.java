@@ -30,4 +30,21 @@ public class ExerciseIconMapperTest {
         assertEquals(0, ExerciseIconMapper.iconFor("俯卧撑"));
         assertEquals(0, ExerciseIconMapper.iconFor("骑行训练"));
     }
+
+    @Test
+    public void mapsNewExercisesAndSharedStrengthIcon() {
+        assertEquals(R.drawable.exercise_icon_badminton, ExerciseIconMapper.iconFor("羽毛球"));
+        assertEquals(R.drawable.exercise_icon_basketball, ExerciseIconMapper.iconFor("篮球"));
+        assertEquals(R.drawable.exercise_icon_soccer, ExerciseIconMapper.iconFor("足球"));
+        assertEquals(R.drawable.exercise_icon_ping_pong, ExerciseIconMapper.iconFor("乒乓球"));
+        assertEquals(R.drawable.exercise_icon_tennis, ExerciseIconMapper.iconFor("网球"));
+        assertEquals(R.drawable.exercise_icon_volleyball, ExerciseIconMapper.iconFor("排球"));
+        assertEquals(R.drawable.exercise_icon_yoga, ExerciseIconMapper.iconFor("瑜伽"));
+        assertEquals(R.drawable.exercise_icon_pilates, ExerciseIconMapper.iconFor("普拉提"));
+        assertEquals(R.drawable.exercise_icon_hiit, ExerciseIconMapper.iconFor("HIIT 间歇训练"));
+        for (String name : new String[]{"低强度", "中等强度", "高强度"}) {
+            assertEquals(R.drawable.exercise_icon_strength, ExerciseIconMapper.iconFor(name));
+        }
+        assertEquals(0, ExerciseIconMapper.iconFor("拳击"));
+    }
 }

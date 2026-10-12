@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ExerciseIconDrawableTest {
     @Test
-    public void allEightVectorsInflateAndDrawVisiblePixels() {
+    public void allExerciseVectorsInflateAndDrawVisiblePixels() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         int[] icons = {
                 R.drawable.exercise_icon_walking,
@@ -30,7 +30,17 @@ public class ExerciseIconDrawableTest {
                 R.drawable.exercise_icon_swimming,
                 R.drawable.exercise_icon_stairs,
                 R.drawable.exercise_icon_jump_rope,
-                R.drawable.exercise_icon_cycling
+                R.drawable.exercise_icon_cycling,
+                R.drawable.exercise_icon_badminton,
+                R.drawable.exercise_icon_basketball,
+                R.drawable.exercise_icon_soccer,
+                R.drawable.exercise_icon_ping_pong,
+                R.drawable.exercise_icon_tennis,
+                R.drawable.exercise_icon_volleyball,
+                R.drawable.exercise_icon_yoga,
+                R.drawable.exercise_icon_pilates,
+                R.drawable.exercise_icon_hiit,
+                R.drawable.exercise_icon_strength
         };
         for (int icon : icons) {
             Drawable drawable = ContextCompat.getDrawable(context, icon);

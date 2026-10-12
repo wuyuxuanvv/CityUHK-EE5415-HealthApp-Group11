@@ -68,7 +68,7 @@ public class ExerciseFragment extends Fragment {
 
     private HealthRepository repository;
     private final List<Exercise> allExercises = new ArrayList<>();
-    private final Map<Long, String> exerciseNames = new HashMap<>();
+    private final Map<Long, Exercise> exercisesById = new HashMap<>();
     private final List<WeekDayView> weekDayViews = new ArrayList<>();
     private List<ExerciseRecord> selectedDateRecords = new ArrayList<>();
     private Set<String> completedWeekDates = new HashSet<>();
@@ -158,11 +158,11 @@ public class ExerciseFragment extends Fragment {
             public void onSuccess(List<Exercise> result) {
                 libraryState = LoadState.SUCCESS;
                 allExercises.clear();
-                exerciseNames.clear();
+                exercisesById.clear();
                 if (result != null) {
                     allExercises.addAll(result);
                     for (Exercise exercise : result) {
-                        exerciseNames.put(exercise.id, exercise.name);
+                        exercisesById.put(exercise.id, exercise);
                     }
                 }
                 if (isUiReady()) {
@@ -175,7 +175,7 @@ public class ExerciseFragment extends Fragment {
             public void onError(Throwable error) {
                 libraryState = LoadState.ERROR;
                 allExercises.clear();
-                exerciseNames.clear();
+                exercisesById.clear();
                 if (isUiReady()) {
                     renderRecords();
                     updateActiveDialogLibrary();
@@ -546,12 +546,13 @@ public class ExerciseFragment extends Fragment {
             ImageView iconView = item.findViewById(R.id.image_exercise_record_icon);
             MaterialButton deleteButton = item.findViewById(R.id.button_exercise_record_delete);
 
-            String name = exerciseNames.get(record.exerciseId);
-            if (name == null || name.trim().isEmpty()) {
-                name = getString(R.string.exercise_unknown_name, record.exerciseId);
-            }
+            Exercise exercise = exercisesById.get(record.exerciseId);
+            String name = exercise == null || exercise.name == null
+                    || exercise.name.trim().isEmpty()
+                    ? getString(R.string.exercise_unknown_name, record.exerciseId)
+                    : displayExerciseName(exercise);
             nameView.setText(name);
-            bindExerciseIcon(iconView, name);
+            bindExerciseIcon(iconView, exercise == null ? null : exercise.name);
             if (!Double.isFinite(record.estimatedCaloriesKcal)
                     || record.estimatedCaloriesKcal < 0) {
                 detailsView.setText(getString(R.string.exercise_record_details_unavailable,
@@ -667,7 +668,7 @@ public class ExerciseFragment extends Fragment {
                         return;
                     }
                     if (selectedExercise != null
-                            && !selectedExercise.name.equalsIgnoreCase(
+                            && !displayExerciseName(selectedExercise).equalsIgnoreCase(
                             editable.toString().trim())) {
                         selectedExercise = null;
                         renderSelectedExercise();
@@ -732,7 +733,8 @@ public class ExerciseFragment extends Fragment {
             }
 
             List<Exercise> filtered = ExerciseSearchFilter.filter(allExercises,
-                    searchInput.getText() == null ? "" : searchInput.getText().toString());
+                    searchInput.getText() == null ? "" : searchInput.getText().toString(),
+                    ExerciseFragment.this::displayExerciseName);
             if (filtered.isEmpty()) {
                 searchStateText.setText(allExercises.isEmpty()
                         ? R.string.exercise_library_empty
@@ -750,10 +752,13 @@ public class ExerciseFragment extends Fragment {
                 TextView detailView = item.findViewById(
                         R.id.text_exercise_search_result_details);
                 ImageView iconView = item.findViewById(R.id.image_exercise_search_result_icon);
-                nameView.setText(exercise.name);
+                nameView.setText(displayExerciseName(exercise));
                 bindExerciseIcon(iconView, exercise.name);
                 detailView.setText(getString(R.string.exercise_search_result_details,
-                        exercise.category, formatMet(exercise.metValue)));
+                        Exercise.CATEGORY_STRENGTH.equals(exercise.category)
+                                ? getString(R.string.exercise_category_anaerobic)
+                                : exercise.category,
+                        formatMet(exercise.metValue)));
                 item.setOnClickListener(v -> selectExercise(exercise));
                 searchResultsContainer.addView(item);
             }
@@ -794,7 +799,7 @@ public class ExerciseFragment extends Fragment {
         private void selectExercise(Exercise exercise) {
             selectedExercise = exercise;
             suppressSearchChange = true;
-            searchInput.setText(exercise.name);
+            searchInput.setText(displayExerciseName(exercise));
             searchInput.setSelection(searchInput.length());
             suppressSearchChange = false;
             renderSelectedExercise();
@@ -808,7 +813,8 @@ public class ExerciseFragment extends Fragment {
                 selectedExerciseText.setText(R.string.exercise_selected_none);
             } else {
                 selectedExerciseText.setText(getString(R.string.exercise_selected_action,
-                        selectedExercise.name, formatMet(selectedExercise.metValue)));
+                        displayExerciseName(selectedExercise),
+                        formatMet(selectedExercise.metValue)));
             }
         }
 
@@ -937,6 +943,23 @@ public class ExerciseFragment extends Fragment {
 
     private static String formatKcal(double value) {
         return String.format(Locale.getDefault(), "%,.0f", value);
+    }
+
+    private String displayExerciseName(Exercise exercise) {
+        if (exercise == null || exercise.name == null
+                || !Exercise.CATEGORY_STRENGTH.equals(exercise.category)) {
+            return exercise == null ? "" : exercise.name;
+        }
+        switch (exercise.name) {
+            case "低强度":
+            case "高强度":
+                return getString(R.string.exercise_strength_display_name, exercise.name);
+            case "中等强度":
+                return getString(R.string.exercise_strength_display_name,
+                        getString(R.string.exercise_strength_medium_label));
+            default:
+                return exercise.name;
+        }
     }
 
     private static void bindExerciseIcon(ImageView imageView, String exerciseName) {

@@ -12,24 +12,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Seed entry point for the built-in exercise and food libraries.
- *
- * Framework owns the trigger and the empty-check; C (database owner) fills the
- * seed lists below. Rules:
- * <ul>
- *   <li>Seeds run once per install, only while the table is empty — never re-insert.</li>
- *   <li>After clearAllData() the tables are empty again, so the next launch
- *       re-seeds automatically and the libraries are never lost.</li>
- *   <li>DAO calls stay on DatabaseExecutor; never call this on the UI thread
- *       expecting completion — fire and forget.</li>
- * </ul>
- *
- * <p><b>Changing the data below.</b> All library content lives in the two constant
- * tables. Editing them does <em>not</em> reach an already-installed app: seeding only
- * runs on an empty table, and {@code insertAll} is IGNORE-on-conflict, so an existing
- * row is never updated. To make an edit take effect you must also bump
- * {@code AppDatabase.version}, which drops and rebuilds the whole database —
- * including the user's records.
+ * Seed entry point for the built-in exercise and food libraries. Missing dictionary
+ * entries are added by name on launch; existing rows and user records are untouched.
+ * DAO calls must stay on DatabaseExecutor, never the UI thread.
  */
 public final class SeedData {
 
@@ -44,11 +29,27 @@ public final class SeedData {
     public static void seedIfEmpty(Context context) {
         DatabaseExecutor.execute(() -> {
             AppDatabase database = AppDatabase.getInstance(context);
-            if (database.exerciseDao().getAll().isEmpty()) {
-                database.exerciseDao().insertAll(buildExerciseSeeds());
-            }
+            syncExerciseLibrary(database);
             syncFoodLibrary(database);
         });
+    }
+
+    /** Also called before reading the picker, so startup seeding cannot race its first query. */
+    static void syncExerciseLibrary(AppDatabase database) {
+        Set<String> existingNames = new HashSet<>();
+        for (Exercise exercise : database.exerciseDao().getAll()) {
+            existingNames.add(exercise.name);
+        }
+        List<Exercise> additions = new ArrayList<>();
+        for (Exercise seed : buildExerciseSeeds()) {
+            if (!existingNames.contains(seed.name)) {
+                additions.add(seed);
+            }
+        }
+        if (!additions.isEmpty()) {
+            // The unique name index + IGNORE also makes concurrent calls idempotent.
+            database.exerciseDao().insertAll(additions);
+        }
     }
 
     /** Adds newly shipped foods and normalizes renamed categories without touching meal records. */
@@ -117,6 +118,15 @@ public final class SeedData {
             {"椭圆机", Exercise.CATEGORY_AEROBIC, 5.0},
             {"爬楼梯", Exercise.CATEGORY_AEROBIC, 8.8},
             {"有氧操", Exercise.CATEGORY_AEROBIC, 7.3},
+            {"羽毛球", Exercise.CATEGORY_AEROBIC, 5.5},
+            {"篮球", Exercise.CATEGORY_AEROBIC, 7.5},
+            {"足球", Exercise.CATEGORY_AEROBIC, 7.0},
+            {"乒乓球", Exercise.CATEGORY_AEROBIC, 4.0},
+            {"网球", Exercise.CATEGORY_AEROBIC, 6.8},
+            {"排球", Exercise.CATEGORY_AEROBIC, 3.0},
+            {"瑜伽", Exercise.CATEGORY_AEROBIC, 2.3},
+            {"普拉提", Exercise.CATEGORY_AEROBIC, 2.8},
+            {"HIIT 间歇训练", Exercise.CATEGORY_AEROBIC, 11.0},
 
             // ----- 力量训练（三个强度档位）-----
             {"低强度", Exercise.CATEGORY_STRENGTH, 3.5},

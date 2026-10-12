@@ -104,7 +104,10 @@ public final class HealthRepository {
     // ---------- 运动库 / 食物库 ----------
 
     public void getAllExercises(RepositoryCallback<List<Exercise>> callback) {
-        submit(() -> database.exerciseDao().getAll(), callback);
+        submit(() -> {
+            SeedData.syncExerciseLibrary(database);
+            return database.exerciseDao().getAll();
+        }, callback);
     }
 
     public void getAllFoods(RepositoryCallback<List<Food>> callback) {
