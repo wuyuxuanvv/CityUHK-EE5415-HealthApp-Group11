@@ -69,9 +69,9 @@
             android:layout_marginTop="@dimen/exercise_gap_medium"
             android:text="@string/exercise_date_label" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_exercise_dialog_date"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+        <TextView
+            android:id="@+id/text_exercise_dialog_date"
+            style="@style/TextAppearance.HealthApp.Body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/exercise_gap_small"

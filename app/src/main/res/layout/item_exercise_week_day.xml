@@ -5,6 +5,7 @@
     android:layout_weight="1"
     android:gravity="center"
     android:orientation="vertical"
+    android:focusable="true"
     android:paddingVertical="@dimen/exercise_gap_small">
 
     <TextView

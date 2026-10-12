@@ -1,7 +1,6 @@
 package com.example.healthapp.exercise;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +30,8 @@ import com.example.healthapp.model.ExerciseRecord;
 import com.example.healthapp.model.UserProfile;
 import com.google.android.material.button.MaterialButton;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,7 +64,7 @@ public class ExerciseFragment extends Fragment {
     private LinearLayout weekDaysContainer;
     private TextView recordsStateText;
     private LinearLayout recordsContainer;
-    private MaterialButton recordsDateButton;
+    private TextView recordsDateText;
 
     private HealthRepository repository;
     private final List<Exercise> allExercises = new ArrayList<>();
@@ -85,6 +83,8 @@ public class ExerciseFragment extends Fragment {
     private LocalDate currentWeekMonday;
     private String selectedRecordDate = DateTimeUtils.today();
     private AddExerciseDialogController activeAddDialog;
+    private int recordsRequestId;
+    private int weekRequestId;
 
     public ExerciseFragment() {
         super(R.layout.fragment_exercise);
@@ -105,18 +105,19 @@ public class ExerciseFragment extends Fragment {
         weekDaysContainer = view.findViewById(R.id.container_exercise_week_days);
         recordsStateText = view.findViewById(R.id.text_exercise_records_state);
         recordsContainer = view.findViewById(R.id.container_exercise_records);
-        recordsDateButton = view.findViewById(R.id.button_exercise_record_date);
+        recordsDateText = view.findViewById(R.id.text_exercise_record_date);
+
+        selectedRecordDate = DateTimeUtils.today();
 
         if (savedInstanceState != null) {
             String restoredDate = savedInstanceState.getString(STATE_RECORD_DATE);
-            if (isValidPastOrToday(restoredDate)) {
+            if (ExerciseWeekDates.isSelectable(restoredDate, LocalDate.now())) {
                 selectedRecordDate = restoredDate;
             }
         }
 
         setupWeekDayViews();
-        updateRecordsDateButton();
-        recordsDateButton.setOnClickListener(v -> showRecordDatePicker());
+        updateRecordsDateText();
         view.findViewById(R.id.button_exercise_add_record)
                 .setOnClickListener(v -> showAddDialog());
     }
@@ -124,6 +125,10 @@ public class ExerciseFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (!ExerciseWeekDates.isSelectable(selectedRecordDate, LocalDate.now())) {
+            selectedRecordDate = DateTimeUtils.today();
+            updateRecordsDateText();
+        }
         loadLibrary();
         loadProfile();
         loadTodaySummary();
@@ -139,6 +144,8 @@ public class ExerciseFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        recordsRequestId++;
+        weekRequestId++;
         activeAddDialog = null;
         super.onDestroyView();
     }
@@ -225,7 +232,11 @@ public class ExerciseFragment extends Fragment {
                 if (!isUiReady()) {
                     return;
                 }
-                int minutes = result == null ? 0 : result;
+                if (result == null) {
+                    showSummaryError(todayMinutesValue, todayMinutesState);
+                    return;
+                }
+                int minutes = result;
                 if (minutes < 0) {
                     showSummaryUnavailable(todayMinutesValue, todayMinutesState);
                     return;
@@ -249,7 +260,11 @@ public class ExerciseFragment extends Fragment {
                         if (!isUiReady()) {
                             return;
                         }
-                        double kcal = result == null ? 0.0 : result;
+                        if (result == null) {
+                            showSummaryError(todayCaloriesValue, todayCaloriesState);
+                            return;
+                        }
+                        double kcal = result;
                         if (!Double.isFinite(kcal) || kcal < 0) {
                             showSummaryUnavailable(todayCaloriesValue, todayCaloriesState);
                             return;
@@ -282,8 +297,9 @@ public class ExerciseFragment extends Fragment {
 
     private void loadWeekRecords() {
         LocalDate today = LocalDate.now();
-        currentWeekMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        currentWeekMonday = ExerciseWeekDates.mondayOf(today);
         LocalDate sunday = currentWeekMonday.plusDays(6);
+        int requestId = ++weekRequestId;
         weekState = LoadState.LOADING;
         completedWeekDates = new HashSet<>();
         completedWeekDays = 0;
@@ -294,20 +310,26 @@ public class ExerciseFragment extends Fragment {
                 new RepositoryCallback<List<ExerciseRecord>>() {
                     @Override
                     public void onSuccess(List<ExerciseRecord> result) {
+                        if (requestId != weekRequestId || !isUiReady()) {
+                            return;
+                        }
+                        if (result == null) {
+                            weekState = LoadState.ERROR;
+                            renderWeek();
+                            return;
+                        }
                         weekState = LoadState.SUCCESS;
                         Set<String> completedDates = new HashSet<>();
-                        if (result != null) {
-                            for (ExerciseRecord record : result) {
-                                try {
-                                    LocalDate recordDate = DateTimeUtils.parseDate(record.recordDate);
-                                    if (!recordDate.isBefore(currentWeekMonday)
-                                            && !recordDate.isAfter(currentWeekMonday.plusDays(6))
-                                            && !recordDate.isAfter(LocalDate.now())) {
-                                        completedDates.add(record.recordDate);
-                                    }
-                                } catch (DateTimeParseException ignored) {
-                                    // Ignore malformed legacy rows instead of presenting fake status.
+                        for (ExerciseRecord record : result) {
+                            try {
+                                LocalDate recordDate = DateTimeUtils.parseDate(record.recordDate);
+                                if (!recordDate.isBefore(currentWeekMonday)
+                                        && !recordDate.isAfter(currentWeekMonday.plusDays(6))
+                                        && !recordDate.isAfter(LocalDate.now())) {
+                                    completedDates.add(record.recordDate);
                                 }
+                            } catch (DateTimeParseException ignored) {
+                                // Ignore malformed legacy rows instead of presenting fake status.
                             }
                         }
                         completedWeekDates = completedDates;
@@ -319,6 +341,9 @@ public class ExerciseFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable error) {
+                        if (requestId != weekRequestId || !isUiReady()) {
+                            return;
+                        }
                         weekState = LoadState.ERROR;
                         completedWeekDates = new HashSet<>();
                         completedWeekDays = 0;
@@ -330,16 +355,26 @@ public class ExerciseFragment extends Fragment {
     }
 
     private void loadSelectedDateRecords() {
+        String requestedDate = selectedRecordDate;
+        int requestId = ++recordsRequestId;
         recordsState = LoadState.LOADING;
         selectedDateRecords = new ArrayList<>();
         renderRecords();
-        repository.getExerciseRecordsForDate(selectedRecordDate,
+        repository.getExerciseRecordsForDate(requestedDate,
                 new RepositoryCallback<List<ExerciseRecord>>() {
                     @Override
                     public void onSuccess(List<ExerciseRecord> result) {
+                        if (requestId != recordsRequestId || !requestedDate.equals(selectedRecordDate)
+                                || !isUiReady()) {
+                            return;
+                        }
+                        if (result == null) {
+                            recordsState = LoadState.ERROR;
+                            renderRecords();
+                            return;
+                        }
                         recordsState = LoadState.SUCCESS;
-                        selectedDateRecords = result == null
-                                ? new ArrayList<>() : new ArrayList<>(result);
+                        selectedDateRecords = new ArrayList<>(result);
                         if (isUiReady()) {
                             renderRecords();
                         }
@@ -347,6 +382,10 @@ public class ExerciseFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable error) {
+                        if (requestId != recordsRequestId || !requestedDate.equals(selectedRecordDate)
+                                || !isUiReady()) {
+                            return;
+                        }
                         recordsState = LoadState.ERROR;
                         selectedDateRecords = new ArrayList<>();
                         if (isUiReady()) {
@@ -361,11 +400,17 @@ public class ExerciseFragment extends Fragment {
         weekDaysContainer.removeAllViews();
         String[] dayLabels = getResources().getStringArray(R.array.exercise_week_day_labels);
         LayoutInflater inflater = LayoutInflater.from(requireContext());
-        for (String dayLabel : dayLabels) {
+        for (int i = 0; i < dayLabels.length; i++) {
             View item = inflater.inflate(R.layout.item_exercise_week_day,
                     weekDaysContainer, false);
             WeekDayView dayView = new WeekDayView(item);
-            dayView.dayText.setText(dayLabel);
+            dayView.dayText.setText(dayLabels[i]);
+            final int dayOffset = i;
+            item.setOnClickListener(v -> {
+                LocalDate date = ExerciseWeekDates.mondayOf(LocalDate.now())
+                        .plusDays(dayOffset);
+                selectRecordDate(DateTimeUtils.formatDate(date));
+            });
             weekDayViews.add(dayView);
             weekDaysContainer.addView(item);
         }
@@ -379,8 +424,21 @@ public class ExerciseFragment extends Fragment {
         for (int i = 0; i < weekDayViews.size(); i++) {
             LocalDate date = currentWeekMonday.plusDays(i);
             WeekDayView dayView = weekDayViews.get(i);
-            dayView.dateText.setText(String.format(Locale.getDefault(), "%d",
-                    date.getDayOfMonth()));
+            boolean selectable = ExerciseWeekDates.isSelectable(
+                    DateTimeUtils.formatDate(date), today);
+            boolean selected = DateTimeUtils.formatDate(date).equals(selectedRecordDate);
+            dayView.itemView.setEnabled(selectable);
+            dayView.itemView.setClickable(selectable);
+            dayView.itemView.setFocusable(selectable);
+            dayView.itemView.setSelected(selected);
+            dayView.itemView.setAlpha(selectable ? 1f : 0.45f);
+            dayView.itemView.setBackgroundColor(ContextCompat.getColor(requireContext(),
+                    selected ? R.color.health_accent_yellow : R.color.health_background));
+            dayView.dayText.setTextColor(ContextCompat.getColor(requireContext(),
+                    date.equals(today) ? R.color.health_accent_blue
+                            : R.color.health_text_primary));
+            dayView.dateText.setText(getString(R.string.exercise_week_date_short,
+                    date.getMonthValue(), date.getDayOfMonth()));
 
             if (weekState == LoadState.LOADING || weekState == LoadState.IDLE) {
                 dayView.statusText.setText(R.string.exercise_week_status_loading);
@@ -418,6 +476,9 @@ public class ExerciseFragment extends Fragment {
                         R.string.exercise_week_day_incomplete_description,
                         dayView.dayText.getText(), date.getDayOfMonth()));
             }
+            dayView.itemView.setContentDescription(dayView.itemView.getContentDescription()
+                    + (date.equals(today) ? getString(R.string.exercise_week_day_today_suffix) : "")
+                    + (selected ? getString(R.string.exercise_week_day_selected_suffix) : ""));
         }
 
         if (weekState == LoadState.LOADING || weekState == LoadState.IDLE) {
@@ -482,6 +543,7 @@ public class ExerciseFragment extends Fragment {
                     recordsContainer, false);
             TextView nameView = item.findViewById(R.id.text_exercise_record_name);
             TextView detailsView = item.findViewById(R.id.text_exercise_record_details);
+            ImageView iconView = item.findViewById(R.id.image_exercise_record_icon);
             MaterialButton deleteButton = item.findViewById(R.id.button_exercise_record_delete);
 
             String name = exerciseNames.get(record.exerciseId);
@@ -489,6 +551,7 @@ public class ExerciseFragment extends Fragment {
                 name = getString(R.string.exercise_unknown_name, record.exerciseId);
             }
             nameView.setText(name);
+            bindExerciseIcon(iconView, name);
             if (!Double.isFinite(record.estimatedCaloriesKcal)
                     || record.estimatedCaloriesKcal < 0) {
                 detailsView.setText(getString(R.string.exercise_record_details_unavailable,
@@ -530,25 +593,23 @@ public class ExerciseFragment extends Fragment {
                 .show();
     }
 
-    private void showRecordDatePicker() {
-        LocalDate current = parseDateOrToday(selectedRecordDate);
-        DatePickerDialog picker = new DatePickerDialog(requireContext(),
-                (datePicker, year, month, dayOfMonth) -> {
-                    selectedRecordDate = DateTimeUtils.formatDate(
-                            LocalDate.of(year, month + 1, dayOfMonth));
-                    updateRecordsDateButton();
-                    loadSelectedDateRecords();
-                }, current.getYear(), current.getMonthValue() - 1, current.getDayOfMonth());
-        picker.getDatePicker().setMaxDate(System.currentTimeMillis());
-        picker.show();
+    private void selectRecordDate(String date) {
+        if (!ExerciseWeekDates.isSelectable(date, LocalDate.now())
+                || date.equals(selectedRecordDate)) {
+            return;
+        }
+        selectedRecordDate = date;
+        updateRecordsDateText();
+        renderWeek();
+        loadSelectedDateRecords();
     }
 
-    private void updateRecordsDateButton() {
+    private void updateRecordsDateText() {
         if (DateTimeUtils.today().equals(selectedRecordDate)) {
-            recordsDateButton.setText(getString(R.string.exercise_date_today,
+            recordsDateText.setText(getString(R.string.exercise_date_today,
                     selectedRecordDate));
         } else {
-            recordsDateButton.setText(selectedRecordDate);
+            recordsDateText.setText(selectedRecordDate);
         }
     }
 
@@ -571,15 +632,16 @@ public class ExerciseFragment extends Fragment {
         private final TextView dialogErrorText;
         private final LinearLayout searchResultsContainer;
         private final MaterialButton clearSearchButton;
-        private final MaterialButton dateButton;
+        private final TextView dateText;
         private AlertDialog dialog;
         private Button saveButton;
         private Exercise selectedExercise;
-        private String recordDate = DateTimeUtils.today();
+        private final String recordDate;
         private boolean suppressSearchChange;
         private boolean saving;
 
         AddExerciseDialogController() {
+            recordDate = selectedRecordDate;
             dialogView = LayoutInflater.from(requireContext())
                     .inflate(R.layout.dialog_exercise_add,
                             (ViewGroup) requireView(), false);
@@ -593,11 +655,11 @@ public class ExerciseFragment extends Fragment {
             searchResultsContainer = dialogView.findViewById(
                     R.id.container_exercise_search_results);
             clearSearchButton = dialogView.findViewById(R.id.button_exercise_clear_search);
-            dateButton = dialogView.findViewById(R.id.button_exercise_dialog_date);
+            dateText = dialogView.findViewById(R.id.text_exercise_dialog_date);
         }
 
         void show() {
-            updateDateButton();
+            updateDateText();
             searchInput.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
@@ -628,10 +690,12 @@ public class ExerciseFragment extends Fragment {
                 renderSelectedExercise();
                 searchInput.requestFocus();
             });
-            dateButton.setOnClickListener(v -> showDialogDatePicker());
 
             dialog = new AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.exercise_add_dialog_title)
+                    .setTitle(getString(DateTimeUtils.today().equals(recordDate)
+                                    ? R.string.exercise_add_dialog_title_for_today
+                                    : R.string.exercise_add_dialog_title_for_backfill,
+                            recordDate))
                     .setView(dialogView)
                     .setPositiveButton(R.string.exercise_save, null)
                     .setNegativeButton(R.string.exercise_cancel, null)
@@ -685,7 +749,9 @@ public class ExerciseFragment extends Fragment {
                 TextView nameView = item.findViewById(R.id.text_exercise_search_result_name);
                 TextView detailView = item.findViewById(
                         R.id.text_exercise_search_result_details);
+                ImageView iconView = item.findViewById(R.id.image_exercise_search_result_icon);
                 nameView.setText(exercise.name);
+                bindExerciseIcon(iconView, exercise.name);
                 detailView.setText(getString(R.string.exercise_search_result_details,
                         exercise.category, formatMet(exercise.metValue)));
                 item.setOnClickListener(v -> selectExercise(exercise));
@@ -746,25 +812,11 @@ public class ExerciseFragment extends Fragment {
             }
         }
 
-        private void showDialogDatePicker() {
-            LocalDate current = parseDateOrToday(recordDate);
-            DatePickerDialog picker = new DatePickerDialog(requireContext(),
-                    (datePicker, year, month, dayOfMonth) -> {
-                        recordDate = DateTimeUtils.formatDate(
-                                LocalDate.of(year, month + 1, dayOfMonth));
-                        updateDateButton();
-                        clearDialogError();
-                    }, current.getYear(), current.getMonthValue() - 1,
-                    current.getDayOfMonth());
-            picker.getDatePicker().setMaxDate(System.currentTimeMillis());
-            picker.show();
-        }
-
-        private void updateDateButton() {
+        private void updateDateText() {
             if (DateTimeUtils.today().equals(recordDate)) {
-                dateButton.setText(getString(R.string.exercise_date_today, recordDate));
+                dateText.setText(getString(R.string.exercise_date_today, recordDate));
             } else {
-                dateButton.setText(recordDate);
+                dateText.setText(getString(R.string.exercise_date_backfill, recordDate));
             }
         }
 
@@ -804,7 +856,7 @@ public class ExerciseFragment extends Fragment {
                 minutesInput.requestFocus();
                 return;
             }
-            if (!isValidPastOrToday(recordDate)) {
+            if (!ExerciseWeekDates.isSelectable(recordDate, LocalDate.now())) {
                 showDialogError(R.string.exercise_error_date);
                 return;
             }
@@ -828,8 +880,6 @@ public class ExerciseFragment extends Fragment {
                     CatInteractionHub.notifyExerciseLogged(record.estimatedCaloriesKcal);
                     toast(R.string.exercise_saved);
                     dialog.dismiss();
-                    selectedRecordDate = record.recordDate;
-                    updateRecordsDateButton();
                     refreshAfterRecordChange();
                 }
 
@@ -885,27 +935,19 @@ public class ExerciseFragment extends Fragment {
         }
     }
 
-    private static boolean isValidPastOrToday(@Nullable String rawDate) {
-        if (rawDate == null) {
-            return false;
-        }
-        try {
-            return !DateTimeUtils.parseDate(rawDate).isAfter(LocalDate.now());
-        } catch (DateTimeParseException error) {
-            return false;
-        }
-    }
-
-    private static LocalDate parseDateOrToday(String rawDate) {
-        try {
-            return DateTimeUtils.parseDate(rawDate);
-        } catch (DateTimeParseException error) {
-            return LocalDate.now();
-        }
-    }
-
     private static String formatKcal(double value) {
         return String.format(Locale.getDefault(), "%,.0f", value);
+    }
+
+    private static void bindExerciseIcon(ImageView imageView, String exerciseName) {
+        int iconResId = ExerciseIconMapper.iconFor(exerciseName);
+        if (iconResId == 0) {
+            imageView.setImageDrawable(null);
+            imageView.setVisibility(View.GONE);
+        } else {
+            imageView.setImageResource(iconResId);
+            imageView.setVisibility(View.VISIBLE);
+        }
     }
 
     private static String formatMet(double value) {
