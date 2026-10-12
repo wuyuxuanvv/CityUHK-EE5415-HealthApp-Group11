@@ -15,4 +15,8 @@
     <dimen name="exercise_compact_button_height">40dp</dimen>
     <dimen name="exercise_search_results_min_height">48dp</dimen>
     <dimen name="exercise_week_status_text_size">22sp</dimen>
+    <dimen name="exercise_search_icon_size">24dp</dimen>
+    <dimen name="exercise_record_icon_size">20dp</dimen>
+    <dimen name="exercise_record_icon_gap">8dp</dimen>
+    <dimen name="exercise_record_name_max_width">160dp</dimen>
 </resources>

@@ -19,13 +19,14 @@
     <string name="exercise_week_goal_unset">周目标未设置</string>
     <string name="exercise_week_goal_only">周目标：%1$d 天</string>
     <string name="exercise_week_goal_progress_v2">目标进度：%1$d / %2$d 天</string>
-    <string name="exercise_week_records_note">按实际运动记录日期统计，不代表计划打卡</string>
+    <string name="exercise_week_records_note">点击本周日期查看或补填；完成天数按运动记录统计，不代表计划打卡</string>
     <string name="exercise_week_read_error">本周运动记录读取失败</string>
     <string name="exercise_week_status_loading">…</string>
     <string name="exercise_week_status_error">!</string>
     <string name="exercise_week_status_future">—</string>
     <string name="exercise_week_status_complete">✓</string>
     <string name="exercise_week_status_incomplete">○</string>
+    <string name="exercise_week_date_short">%1$d/%2$d</string>
     <string-array name="exercise_week_day_labels">
         <item>一</item>
         <item>二</item>
@@ -40,6 +41,8 @@
     <string name="exercise_week_day_future_description">周%1$s %2$d 日，未来日期</string>
     <string name="exercise_week_day_complete_description">周%1$s %2$d 日，已有运动记录</string>
     <string name="exercise_week_day_incomplete_description">周%1$s %2$d 日，暂无运动记录</string>
+    <string name="exercise_week_day_today_suffix">，今天</string>
+    <string name="exercise_week_day_selected_suffix">，已选中</string>
 
     <string name="exercise_records_title">运动记录</string>
     <string name="exercise_records_loading">正在读取运动记录…</string>
@@ -47,6 +50,7 @@
     <string name="exercise_records_empty">该日期还没有运动记录</string>
     <string name="exercise_date_today_short">今天</string>
     <string name="exercise_date_today">今天 · %1$s</string>
+    <string name="exercise_date_backfill">补填 · %1$s</string>
     <string name="exercise_unknown_name">运动项目 #%1$d</string>
     <string name="exercise_record_details">%1$d min · 约 %2$s kcal（估算）</string>
     <string name="exercise_record_details_unavailable">%1$d min · 热量不可计算</string>
@@ -58,6 +62,8 @@
     <string name="exercise_add_record">+ 添加运动记录</string>
 
     <string name="exercise_add_dialog_title">添加运动记录</string>
+    <string name="exercise_add_dialog_title_for_today">添加运动记录 · %1$s</string>
+    <string name="exercise_add_dialog_title_for_backfill">补填运动记录 · %1$s</string>
     <string name="exercise_search_label">选择运动动作</string>
     <string name="exercise_search_hint">搜索运动名称</string>
     <string name="exercise_search_clear">清空并重新选择</string>
@@ -78,6 +84,6 @@
     <string name="exercise_enter_duration_for_estimate">输入有效时长后可估算热量</string>
     <string name="exercise_estimate_value">预计消耗约 %1$s kcal（估算）</string>
     <string name="exercise_error_action_required">请先从搜索结果中选择运动动作</string>
-    <string name="exercise_error_date">运动日期不能晚于今天</string>
+    <string name="exercise_error_date">只能填写本周周一至今天的有效日期</string>
     <string name="exercise_save">保存</string>
 </resources>

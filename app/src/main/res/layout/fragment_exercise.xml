@@ -205,12 +205,11 @@
                         android:layout_weight="1"
                         android:text="@string/exercise_records_title" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_exercise_record_date"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
+                    <TextView
+                        android:id="@+id/text_exercise_record_date"
+                        style="@style/TextAppearance.HealthApp.Body"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:minHeight="@dimen/exercise_compact_button_height"
                         android:text="@string/exercise_date_today_short" />
                 </LinearLayout>
 

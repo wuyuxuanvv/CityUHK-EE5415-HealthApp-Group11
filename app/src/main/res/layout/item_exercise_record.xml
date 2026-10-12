@@ -18,11 +18,30 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/text_exercise_record_name"
-                style="@style/TextAppearance.HealthApp.CardTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/text_exercise_record_name"
+                    style="@style/TextAppearance.HealthApp.CardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:maxWidth="@dimen/exercise_record_name_max_width" />
+
+                <ImageView
+                    android:id="@+id/image_exercise_record_icon"
+                    android:layout_width="@dimen/exercise_record_icon_size"
+                    android:layout_height="@dimen/exercise_record_icon_size"
+                    android:layout_marginStart="@dimen/exercise_record_icon_gap"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/text_exercise_record_details"

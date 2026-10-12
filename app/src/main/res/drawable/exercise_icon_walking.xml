@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Converted from 临时/walking.svg; also used for 快走. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/health_text_primary"
+        android:pathData="M12,2m-2,0a2,2 0,1 0,4 0a2,2 0,1 0,-4 0" />
+    <path
+        android:fillColor="@color/health_text_primary"
+        android:pathData="M14.12,10H19V8.2h-3.62l-2,-3.33c-0.3,-0.5 -0.84,-0.84 -1.46,-0.84 -0.18,0 -0.34,0.03 -0.5,0.08L6,6.28V12h2V7.58l1.74,-0.7L6.66,22h2.24l2.1,-8 2,2v6h2v-7.5l-2.24,-2.24 0.68,-3.26z" />
+</vector>
