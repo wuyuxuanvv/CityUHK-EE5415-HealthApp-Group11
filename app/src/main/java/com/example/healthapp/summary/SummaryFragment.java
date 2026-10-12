@@ -1,6 +1,8 @@
 package com.example.healthapp.summary;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import com.google.android.material.button.MaterialButton;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -35,7 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 每日总结（v2.0）：今日任务完成蓝卡 + 四项数据格 + 本周运动柱状图 + 近 30 天完整记录（可删除）。
+ * 总结：今日任务完成蓝卡 + 四项数据格 + 本周饮食运动汇总与折线图 + 近 30 天完整记录（可删除）。
  */
 public class SummaryFragment extends Fragment {
 
@@ -49,7 +51,14 @@ public class SummaryFragment extends Fragment {
     private TextView intakeText;
     private TextView burnText;
     private TextView netText;
-    private WeekBarChartView weekChart;
+    private WeekLineChartView weekChart;
+    private TextView weekTotals, weekState, chartLegend;
+    private MaterialButton minutesButton, caloriesButton;
+    private WeeklySummary weekly;
+    private boolean calorieChart;
+    private int weekGeneration;
+    private LocalDate weekToday;
+    private static final String STATE_CHART = "summary_calorie_chart";
 
     private HealthRepository repository;
     private UserProfile profile;
@@ -76,6 +85,15 @@ public class SummaryFragment extends Fragment {
         netText = view.findViewById(R.id.text_summary_net);
         weekChart = view.findViewById(R.id.chart_summary_week);
 
+        weekTotals = view.findViewById(R.id.text_summary_week_totals);
+        weekState = view.findViewById(R.id.text_summary_week_state);
+        chartLegend = view.findViewById(R.id.text_summary_chart_legend);
+        minutesButton = view.findViewById(R.id.button_summary_minutes);
+        caloriesButton = view.findViewById(R.id.button_summary_calories);
+        calorieChart = savedInstanceState != null && savedInstanceState.getBoolean(STATE_CHART);
+        minutesButton.setOnClickListener(v -> { calorieChart = false; renderChart(); });
+        caloriesButton.setOnClickListener(v -> { calorieChart = true; renderChart(); });
+        renderChart();
         dateText.setText(new SimpleDateFormat("M月d日 EEEE", Locale.CHINA).format(new Date()));
         view.findViewById(R.id.button_summary_history).setOnClickListener(v -> showHistory());
     }
@@ -87,19 +105,18 @@ public class SummaryFragment extends Fragment {
     }
 
     private void loadAll() {
+        loadWeek();
         String today = DateTimeUtils.today();
         repository.getUserProfile(new RepositoryCallback<UserProfile>() {
             @Override
             public void onSuccess(UserProfile result) {
                 profile = result;
-                loadWeek();
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
                 profile = null;
-                loadWeek();
                 render();
             }
         });
@@ -153,30 +170,86 @@ public class SummaryFragment extends Fragment {
         });
     }
 
-    private void loadWeek() {
-        LocalDate monday = LocalDate.now()
-                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        final float[] weekMinutes = new float[7];
-        final float goal = profile != null && profile.dailyExerciseGoalMinutes > 0
-                ? profile.dailyExerciseGoalMinutes : 30;
-        for (int i = 0; i < 7; i++) {
-            final int index = i;
-            String date = DateTimeUtils.formatDate(monday.plusDays(i));
-            repository.getExerciseMinutesForDate(date, new RepositoryCallback<Integer>() {
-                @Override
-                public void onSuccess(Integer result) {
-                    weekMinutes[index] = result == null ? 0 : result;
-                    weekChart.setData(weekMinutes, goal);
-                }
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(STATE_CHART, calorieChart);
+    }
 
-                @Override
-                public void onError(Throwable error) {
-                    weekMinutes[index] = 0;
-                    weekChart.setData(weekMinutes, goal);
-                }
-            });
+    @Override
+    public void onDestroyView() {
+        weekGeneration++;
+        super.onDestroyView();
+    }
+
+    private boolean activeWeek(int generation) {
+        return generation == weekGeneration && isAdded() && getView() != null;
+    }
+
+    private void loadWeek() {
+        final int generation = ++weekGeneration;
+        final LocalDate today = LocalDate.now();
+        final LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        weekToday = today;
+        weekly = null;
+        weekTotals.setText("本周数据加载中…");
+        weekState.setText("周一至周日 · " + monday + " — " + monday.plusDays(6));
+        renderChart();
+        repository.getExerciseRecordsInRange(DateTimeUtils.formatDate(monday),
+                DateTimeUtils.formatDate(today), new RepositoryCallback<List<ExerciseRecord>>() {
+            @Override public void onSuccess(List<ExerciseRecord> exercises) {
+                if (!activeWeek(generation)) return;
+                repository.getFoodRecordsInRange(DateTimeUtils.formatDate(monday),
+                        DateTimeUtils.formatDate(today), new RepositoryCallback<List<FoodRecord>>() {
+                    @Override public void onSuccess(List<FoodRecord> foods) {
+                        if (!activeWeek(generation)) return;
+                        weekly = WeeklySummary.from(monday, today, exercises, foods);
+                        weekTotals.setText("运动 " + weekly.totalMinutes + " 分钟 · "
+                                + weekly.exerciseDayCount() + " 天\n摄入 "
+                                + formatKcal(weekly.totalIntake) + " 千卡 · 饮食记录 "
+                                + weekly.foodDayCount() + " 天\n运动消耗 "
+                                + formatKcal(weekly.totalBurn) + " 千卡 · 净热量 "
+                                + formatSigned(weekly.totalIntake - weekly.totalBurn) + " 千卡");
+                        weekState.setText(monday + " — " + monday.plusDays(6)
+                                + (exercises.isEmpty() && foods.isEmpty() ? "\n本周还没有记录" : "\n统计截至今天")
+                                + " · 灰色日期尚未到来\n净热量 = 记录摄入 − 运动消耗");
+                        renderChart();
+                    }
+                    @Override public void onError(Throwable error) { weekError(generation); }
+                });
+            }
+            @Override public void onError(Throwable error) { weekError(generation); }
+        });
+    }
+
+    private void weekError(int generation) {
+        if (!activeWeek(generation)) return;
+        weekly = null;
+        weekTotals.setText("本周数据读取失败，请重试");
+        weekState.setText("未显示统计结果，避免将读取失败当作零记录");
+        renderChart();
+        weekState.setOnClickListener(v -> loadWeek());
+    }
+
+    private void renderChart() {
+        if (weekChart == null) return;
+        boolean ready = weekly != null;
+        weekChart.setVisibility(ready ? View.VISIBLE : View.GONE);
+        if (ready) {
+            weekChart.setData(calorieChart ? weekly.intake : weekly.minutes,
+                    weekly.burn, weekToday.getDayOfWeek().getValue(), calorieChart);
         }
-        weekChart.setData(weekMinutes, goal);
+        chartLegend.setText(calorieChart ? "红线：饮食摄入 · 蓝线：运动消耗（千卡）"
+                : "蓝线：每日运动时长（分钟）");
+        styleChartButton(minutesButton, !calorieChart);
+        styleChartButton(caloriesButton, calorieChart);
+    }
+
+    private void styleChartButton(MaterialButton button, boolean selected) {
+        button.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(
+                requireContext(), selected ? R.color.health_accent_yellow : R.color.health_surface)));
+        button.setTextColor(ContextCompat.getColor(requireContext(), R.color.health_text_primary));
+        button.setSelected(selected);
     }
 
     // ---------- 渲染 ----------
