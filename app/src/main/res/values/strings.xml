@@ -123,9 +123,10 @@
     <string name="diet_add_meal">添加餐食</string>
     <string name="diet_dialog_title">添加一餐</string>
     <string name="diet_label_meal">餐次</string>
+    <string name="diet_label_food_category">食物分类</string>
     <string name="diet_label_food">选择食物</string>
     <string name="diet_label_grams">重量（克）</string>
-    <string name="diet_hint_grams">例如：150</string>
+    <string name="diet_hint_grams">例如：150（范围 1–2000 克）</string>
     <string name="diet_kcal_estimate">约 %1$s 千卡</string>
     <string name="diet_error_grams">重量需在 1–2000 克之间</string>
     <string name="diet_saved">餐食已记录</string>

@@ -17,12 +17,15 @@ import androidx.room.PrimaryKey;
 public class Food {
     /** Food-group taxonomy. Seed data must use one of these values. */
     public static final String CATEGORY_STAPLE = "主食";
-    public static final String CATEGORY_MEAT_EGG = "肉蛋";
+    public static final String CATEGORY_MEAT_EGG_DAIRY_BEAN = "肉蛋奶豆";
+    /** Legacy values retained so existing local rows can be grouped after the taxonomy update. */
+    @Deprecated public static final String CATEGORY_MEAT_EGG = "肉蛋";
+    @Deprecated public static final String CATEGORY_DAIRY_BEAN = "奶豆";
     public static final String CATEGORY_VEGETABLE = "蔬菜";
     public static final String CATEGORY_FRUIT = "水果";
-    public static final String CATEGORY_DAIRY_BEAN = "奶豆";
     public static final String CATEGORY_NUT = "坚果";
     public static final String CATEGORY_DRINK = "饮品";
+    public static final String CATEGORY_FAST_FOOD = "快餐";
     public static final String CATEGORY_OTHER = "其他";
 
     @PrimaryKey(autoGenerate = true)

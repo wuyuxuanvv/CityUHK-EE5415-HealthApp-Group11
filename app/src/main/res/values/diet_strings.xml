@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diet_food_calories_per_100g">%1$s 千卡/100g</string>
+    <string name="diet_week_title">本周饮食情况</string>
+    <string name="diet_week_recorded_days">本周已记录 %1$d 天</string>
+    <string name="diet_week_note">点击过去日期，查看或补录餐食</string>
+    <string name="diet_week_loading">正在读取本周记录…</string>
+    <string name="diet_week_error">本周饮食记录读取失败</string>
+    <string name="diet_week_status_recorded">●</string>
+    <string name="diet_week_status_empty">○</string>
+    <string name="diet_week_status_future">—</string>
+    <string name="diet_selected_meals">%1$s 餐食</string>
+    <string name="diet_today_meals_title">今日餐食</string>
+    <string-array name="diet_week_day_labels">
+        <item>一</item><item>二</item><item>三</item><item>四</item><item>五</item><item>六</item><item>日</item>
+    </string-array>
+</resources>

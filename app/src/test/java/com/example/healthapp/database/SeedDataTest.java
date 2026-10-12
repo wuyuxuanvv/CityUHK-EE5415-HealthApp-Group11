@@ -24,9 +24,9 @@ public class SeedDataTest {
             Exercise.CATEGORY_AEROBIC, Exercise.CATEGORY_STRENGTH));
 
     private static final Set<String> FOOD_CATEGORIES = new HashSet<>(Arrays.asList(
-            Food.CATEGORY_STAPLE, Food.CATEGORY_MEAT_EGG, Food.CATEGORY_VEGETABLE,
-            Food.CATEGORY_FRUIT, Food.CATEGORY_DAIRY_BEAN, Food.CATEGORY_NUT,
-            Food.CATEGORY_DRINK, Food.CATEGORY_OTHER));
+            Food.CATEGORY_STAPLE, Food.CATEGORY_MEAT_EGG_DAIRY_BEAN,
+            Food.CATEGORY_VEGETABLE, Food.CATEGORY_FRUIT, Food.CATEGORY_NUT,
+            Food.CATEGORY_DRINK, Food.CATEGORY_FAST_FOOD, Food.CATEGORY_OTHER));
 
     @Test
     public void exerciseSeeds_meetContractMinimum() {

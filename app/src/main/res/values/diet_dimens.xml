@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="diet_dialog_padding">24dp</dimen>
+    <dimen name="diet_gap_small">6dp</dimen>
+    <dimen name="diet_gap_medium">12dp</dimen>
+    <dimen name="diet_food_grid_height">276dp</dimen>
+    <dimen name="diet_food_grid_gap">3dp</dimen>
+    <dimen name="diet_food_item_padding">6dp</dimen>
+    <dimen name="diet_food_image_size">64dp</dimen>
+    <dimen name="diet_food_text_gap">2dp</dimen>
+    <dimen name="diet_food_calorie_text_size">11sp</dimen>
+</resources>
