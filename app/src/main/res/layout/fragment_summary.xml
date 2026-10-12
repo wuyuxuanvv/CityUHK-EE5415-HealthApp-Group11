@@ -190,7 +190,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 本周运动柱状图 -->
+        <!-- 本周汇总与折线趋势 -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.HealthApp.Card"
             android:layout_width="match_parent"
@@ -207,13 +207,54 @@
                     style="@style/TextAppearance.HealthApp.CardTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/summary_week_exercise" />
+                    android:text="本周总结" />
 
-                <com.example.healthapp.summary.WeekBarChartView
+                <TextView
+                    android:id="@+id/text_summary_week_totals"
+                    style="@style/TextAppearance.HealthApp.CardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
+                <TextView
+                    android:id="@+id/text_summary_week_state"
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+                <TextView
+                    android:id="@+id/text_summary_chart_legend"
+                    style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
+                <com.example.healthapp.summary.WeekLineChartView
                     android:id="@+id/chart_summary_week"
                     android:layout_width="match_parent"
-                    android:layout_height="160dp"
+                    android:layout_height="220dp"
                     android:layout_marginTop="12dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_summary_minutes"
+                        style="@style/Widget.HealthApp.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:layout_weight="1"
+                        android:text="运动时长" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_summary_calories"
+                        style="@style/Widget.HealthApp.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="摄入 / 消耗" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
