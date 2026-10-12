@@ -23,11 +23,14 @@ import com.example.healthapp.database.HealthRepository;
 import com.example.healthapp.home.pet.PetManager;
 import com.example.healthapp.home.pet.PetView;
 import com.example.healthapp.model.UserProfile;
+import com.example.healthapp.model.ExerciseRecord;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 今日健康首页（v2.0）：小猫状态块 + 运动/摄入双栏 + 今日任务 + 开始运动。
@@ -45,8 +48,6 @@ public class HomeFragment extends Fragment implements CatInteractionHub.CatMasco
     private PetManager petManager;
     private int loadGeneration;
     private String loadedDate;
-    private boolean intakeReady;
-    private boolean burnReady;
 
     private HealthRepository repository;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -80,7 +81,8 @@ public class HomeFragment extends Fragment implements CatInteractionHub.CatMasco
         tasksContainer = view.findViewById(R.id.container_home_tasks);
         petManager = new PetManager(requireContext(),
                 (PetView) view.findViewById(R.id.image_home_cat),
-                view.findViewById(R.id.text_home_pet_status));
+                view.findViewById(R.id.text_home_pet_status),
+                view.findViewById(R.id.text_home_pet_earned));
         profileHintText = view.findViewById(R.id.text_home_profile_hint);
         repository = HealthRepository.getInstance(requireContext());
 
@@ -153,9 +155,32 @@ public class HomeFragment extends Fragment implements CatInteractionHub.CatMasco
         String today = DateTimeUtils.today();
         loadedDate = today;
         final int generation = ++loadGeneration;
-        intakeReady = false;
-        burnReady = false;
-        petManager.loading();
+        petManager.loading(today);
+        repository.getExerciseRecordsForDate(today,
+                new RepositoryCallback<List<ExerciseRecord>>() {
+                    @Override
+                    public void onSuccess(List<ExerciseRecord> records) {
+                        if (!isCurrentLoad(generation, today)) return;
+                        if (records == null) {
+                            petManager.error();
+                            return;
+                        }
+                        List<Long> ids = new ArrayList<>();
+                        for (ExerciseRecord record : records) {
+                            if (record == null || record.id <= 0 || !today.equals(record.recordDate)) {
+                                petManager.error();
+                                return;
+                            }
+                            ids.add(record.id);
+                        }
+                        petManager.update(today, ids);
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        if (isCurrentLoad(generation, today)) petManager.error();
+                    }
+                });
         dateText.setText(new SimpleDateFormat("M月d日 EEEE", Locale.CHINA).format(new Date()));
         repository.getUserProfile(new RepositoryCallback<UserProfile>() {
             @Override
@@ -190,19 +215,15 @@ public class HomeFragment extends Fragment implements CatInteractionHub.CatMasco
             public void onSuccess(Double result) {
                 if (!isCurrentLoad(generation, today)) return;
                 if (result == null || !Double.isFinite(result) || result < 0) {
-                    petManager.error();
                     return;
                 }
                 todayIntake = result;
-                intakeReady = true;
-                updatePet(today);
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
                 if (!isCurrentLoad(generation, today)) return;
-                petManager.error();
                 render();
             }
         });
@@ -211,19 +232,15 @@ public class HomeFragment extends Fragment implements CatInteractionHub.CatMasco
             public void onSuccess(Double result) {
                 if (!isCurrentLoad(generation, today)) return;
                 if (result == null || !Double.isFinite(result) || result < 0) {
-                    petManager.error();
                     return;
                 }
                 todayBurn = result;
-                burnReady = true;
-                updatePet(today);
                 render();
             }
 
             @Override
             public void onError(Throwable error) {
                 if (!isCurrentLoad(generation, today)) return;
-                petManager.error();
                 render();
             }
         });
@@ -248,12 +265,6 @@ public class HomeFragment extends Fragment implements CatInteractionHub.CatMasco
     private boolean isCurrentLoad(int generation, String date) {
         return generation == loadGeneration && isResumed() && getView() != null
                 && DateTimeUtils.today().equals(date);
-    }
-
-    private void updatePet(String date) {
-        if (intakeReady && burnReady && petManager != null) {
-            petManager.update(date, todayIntake, todayBurn);
-        }
     }
 
     private void render() {

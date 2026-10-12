@@ -63,6 +63,16 @@
                     android:layout_height="wrap_content"
                     android:text="@string/home_status_no_record" />
 
+                <TextView
+                    android:id="@+id/text_home_pet_earned"
+                    style="@style/TextAppearance.HealthApp.CardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/home_cat_pet_status_gap"
+                    android:gravity="center"
+                    android:accessibilityLiveRegion="polite"
+                    android:text="@string/home_cat_pet_count_loading" />
+
                 <!-- 挂载点 id 冻结：E 的小猫动画替换此容器内容 -->
                 <FrameLayout
                     android:id="@+id/container_home_gauge"
