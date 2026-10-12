@@ -68,8 +68,8 @@ public final class PetView extends View {
         super.onDraw(canvas);
         // Reserve separate horizontal areas for the bowl and the entire walking sprite.
         // Clamp the sprite rectangle, rather than its centre, so even the tail stays clear.
-        // Leave roughly 40% of the view width available for visible left/right travel.
-        float size = Math.min(getHeight() * 0.9f, getWidth() * 0.34f);
+        // Larger cat, while retaining roughly 32% width for visible left/right travel.
+        float size = Math.min(getHeight() * 0.9f, getWidth() * 0.4f);
         float gap = getWidth() * 0.04f;
         float top = (getHeight() - size) * 0.5f;
         float prop = size * 0.4f;
