@@ -21,6 +21,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.healthapp.R;
 import com.example.healthapp.common.CatInteractionHub;
@@ -28,15 +30,26 @@ import com.example.healthapp.common.DateTimeUtils;
 import com.example.healthapp.common.HealthCalculations;
 import com.example.healthapp.common.RepositoryCallback;
 import com.example.healthapp.database.HealthRepository;
+import com.example.healthapp.database.SeedData;
 import com.example.healthapp.model.Food;
 import com.example.healthapp.model.FoodRecord;
 import com.example.healthapp.model.UserProfile;
 
+import java.text.Collator;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 饮食记录页（v2.0）：黄色今日摄入大卡（目标+进度）+ 四餐次列表 + 添加餐食。
@@ -53,17 +66,29 @@ public class DietFragment extends Fragment {
     private static final int[] MEAL_LABELS = {
             R.string.diet_meal_breakfast, R.string.diet_meal_lunch,
             R.string.diet_meal_dinner, R.string.diet_meal_snack};
+    private static final List<String> CATEGORY_ORDER = Arrays.asList(
+            Food.CATEGORY_STAPLE, Food.CATEGORY_MEAT_EGG_DAIRY_BEAN,
+            Food.CATEGORY_VEGETABLE, Food.CATEGORY_FRUIT, Food.CATEGORY_NUT,
+            Food.CATEGORY_DRINK, Food.CATEGORY_FAST_FOOD, Food.CATEGORY_OTHER);
 
     private TextView intakeText;
     private TextView goalText;
     private TextView percentText;
     private android.widget.ProgressBar intakeProgress;
     private LinearLayout mealsContainer;
+    private LinearLayout weekDaysContainer;
+    private TextView weekSummaryText;
+    private TextView mealsTitleText;
 
     private HealthRepository repository;
     private final List<Food> allFoods = new ArrayList<>();
     private final Map<Long, String> foodNames = new HashMap<>();
     private List<FoodRecord> todayRecords = new ArrayList<>();
+    private List<FoodRecord> displayedRecords = new ArrayList<>();
+    private final List<WeekDayView> weekDayViews = new ArrayList<>();
+    private Set<String> recordedWeekDates = new HashSet<>();
+    private LocalDate weekMonday;
+    private String selectedRecordDate = DateTimeUtils.today();
     private UserProfile profile;
 
     public DietFragment() {
@@ -80,6 +105,10 @@ public class DietFragment extends Fragment {
         percentText = view.findViewById(R.id.text_diet_percent);
         intakeProgress = view.findViewById(R.id.progress_diet_intake);
         mealsContainer = view.findViewById(R.id.container_diet_meals);
+        weekDaysContainer = view.findViewById(R.id.container_diet_week_days);
+        weekSummaryText = view.findViewById(R.id.text_diet_week_summary);
+        mealsTitleText = view.findViewById(R.id.text_diet_meals_title);
+        setupWeekDayViews();
 
         view.findViewById(R.id.button_diet_add).setOnClickListener(v -> showAddDialog());
     }
@@ -90,6 +119,7 @@ public class DietFragment extends Fragment {
         loadLibrary();
         loadProfile();
         loadToday();
+        loadWeekRecords();
     }
 
     // ---------- 数据加载 ----------
@@ -105,6 +135,7 @@ public class DietFragment extends Fragment {
                     for (Food food : result) {
                         foodNames.put(food.id, food.name);
                     }
+                    allFoods.removeIf(food -> SeedData.isRetiredFoodName(food.name));
                 }
                 renderMeals();
             }
@@ -138,6 +169,9 @@ public class DietFragment extends Fragment {
             @Override
             public void onSuccess(List<FoodRecord> result) {
                 todayRecords = result == null ? new ArrayList<>() : result;
+                if (DateTimeUtils.today().equals(selectedRecordDate)) {
+                    displayedRecords = new ArrayList<>(todayRecords);
+                }
                 renderMeals();
                 renderIntake();
             }
@@ -183,6 +217,11 @@ public class DietFragment extends Fragment {
         if (!isAdded()) {
             return;
         }
+        if (DateTimeUtils.today().equals(selectedRecordDate)) {
+            mealsTitleText.setText(R.string.diet_today_meals_title);
+        } else {
+            mealsTitleText.setText(getString(R.string.diet_selected_meals, selectedRecordDate));
+        }
         mealsContainer.removeAllViews();
         float density = getResources().getDisplayMetrics().density;
         for (int i = 0; i < MEAL_TYPES.length; i++) {
@@ -201,12 +240,49 @@ public class DietFragment extends Fragment {
 
     private List<FoodRecord> recordsOfMeal(String mealType) {
         List<FoodRecord> result = new ArrayList<>();
-        for (FoodRecord record : todayRecords) {
+        for (FoodRecord record : displayedRecords) {
             if (mealType.equals(record.mealType)) {
                 result.add(record);
             }
         }
         return result;
+    }
+
+    private void setupWeekDayViews() {
+        String[] labels = getResources().getStringArray(R.array.diet_week_day_labels);
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        for (String label : labels) {
+            View item = inflater.inflate(R.layout.item_diet_week_day, weekDaysContainer, false);
+            WeekDayView day = new WeekDayView(item);
+            day.label.setText(label);
+            weekDayViews.add(day);
+            weekDaysContainer.addView(item);
+        }
+    }
+
+    private void renderWeek() {
+        if (weekMonday == null || !isAdded()) return;
+        LocalDate today = LocalDate.now();
+        int recorded = 0;
+        for (int i = 0; i < weekDayViews.size(); i++) {
+            LocalDate date = weekMonday.plusDays(i);
+            String dateText = DateTimeUtils.formatDate(date);
+            WeekDayView view = weekDayViews.get(i);
+            boolean future = date.isAfter(today);
+            boolean hasRecord = recordedWeekDates.contains(dateText);
+            if (hasRecord) recorded++;
+            view.date.setText(String.format(Locale.getDefault(), "%d", date.getDayOfMonth()));
+            view.status.setText(future ? R.string.diet_week_status_future
+                    : hasRecord ? R.string.diet_week_status_recorded : R.string.diet_week_status_empty);
+            view.status.setTextColor(ContextCompat.getColor(requireContext(), future ? R.color.health_grey_light
+                    : hasRecord ? R.color.health_accent_green : R.color.health_text_primary));
+            view.item.setOnClickListener(future ? null : v -> {
+                selectedRecordDate = dateText;
+                loadSelectedDateRecords();
+                renderWeek();
+            });
+        }
+        weekSummaryText.setText(getString(R.string.diet_week_recorded_days, recorded));
     }
 
     private void addMealHeader(String mealType, int labelRes, float density) {
@@ -277,6 +353,8 @@ public class DietFragment extends Fragment {
                             public void onSuccess(Integer result) {
                                 toast(R.string.diet_deleted);
                                 loadToday();
+                                loadSelectedDateRecords();
+                                loadWeekRecords();
                             }
 
                             @Override
@@ -297,21 +375,26 @@ public class DietFragment extends Fragment {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_food, null);
         RadioGroup mealGroup = dialogView.findViewById(R.id.radio_diet_meal);
-        Spinner spinner = dialogView.findViewById(R.id.spinner_diet_food);
+        Spinner categorySpinner = dialogView.findViewById(R.id.spinner_diet_category);
+        RecyclerView foodPicker = dialogView.findViewById(R.id.list_diet_food_picker);
         EditText gramsInput = dialogView.findViewById(R.id.input_diet_grams);
         TextView estimate = dialogView.findViewById(R.id.text_diet_estimate);
 
-        List<String> labels = new ArrayList<>();
-        for (Food food : allFoods) {
-            labels.add(food.name + "（" + formatKcal(food.caloriesPer100g) + " 千卡/100g）");
-        }
-        if (allFoods.isEmpty()) {
-            labels.add("（无）");
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_item, labels);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+        List<String> categories = foodCategories();
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, categories);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(categoryAdapter);
+
+        final Food[] selectedFood = new Food[1];
+        FoodPickerAdapter foodAdapter = new FoodPickerAdapter(requireContext(), food -> {
+            selectedFood[0] = food;
+            updateEstimate(food, gramsInput, estimate);
+        });
+        foodPicker.setLayoutManager(new GridLayoutManager(requireContext(), 3));
+        foodPicker.setAdapter(foodAdapter);
+        selectedFood[0] = populateFoodGrid(categories.isEmpty()
+                ? Food.CATEGORY_OTHER : categories.get(0), foodAdapter);
 
         TextWatcher watcher = new TextWatcher() {
             @Override
@@ -320,7 +403,7 @@ public class DietFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updateEstimate(spinner, gramsInput, estimate);
+                updateEstimate(selectedFood[0], gramsInput, estimate);
             }
 
             @Override
@@ -328,51 +411,123 @@ public class DietFragment extends Fragment {
             }
         };
         gramsInput.addTextChangedListener(watcher);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateEstimate(spinner, gramsInput, estimate);
+                String category = categories.get(position < categories.size() ? position : 0);
+                selectedFood[0] = populateFoodGrid(category, foodAdapter);
+                updateEstimate(selectedFood[0], gramsInput, estimate);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-        updateEstimate(spinner, gramsInput, estimate);
+        updateEstimate(selectedFood[0], gramsInput, estimate);
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.diet_dialog_title)
                 .setView(dialogView)
                 .setPositiveButton(R.string.profile_save, (dialog, which) ->
-                        saveRecord(mealGroup, spinner, gramsInput))
+                        saveRecord(mealGroup, selectedFood[0], gramsInput))
                 .setNegativeButton(R.string.profile_cancel, null)
                 .show();
     }
 
-    private void updateEstimate(Spinner spinner, EditText gramsInput, TextView estimate) {
+    private void loadSelectedDateRecords() {
+        repository.getFoodRecordsForDate(selectedRecordDate, new RepositoryCallback<List<FoodRecord>>() {
+            @Override public void onSuccess(List<FoodRecord> result) {
+                displayedRecords = result == null ? new ArrayList<>() : new ArrayList<>(result);
+                renderMeals();
+            }
+            @Override public void onError(Throwable error) { displayedRecords = new ArrayList<>(); renderMeals(); }
+        });
+    }
+
+    private void loadWeekRecords() {
+        LocalDate today = LocalDate.now();
+        weekMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate sunday = weekMonday.plusDays(6);
+        weekSummaryText.setText(R.string.diet_week_loading);
+        repository.getFoodRecordsInRange(DateTimeUtils.formatDate(weekMonday), DateTimeUtils.formatDate(sunday),
+                new RepositoryCallback<List<FoodRecord>>() {
+                    @Override public void onSuccess(List<FoodRecord> result) {
+                        recordedWeekDates = new HashSet<>();
+                        if (result != null) for (FoodRecord record : result) recordedWeekDates.add(record.recordDate);
+                        renderWeek();
+                    }
+                    @Override public void onError(Throwable error) { weekSummaryText.setText(R.string.diet_week_error); }
+                });
+    }
+
+    private List<String> foodCategories() {
+        Set<String> availableCategories = new LinkedHashSet<>();
+        for (Food food : allFoods) {
+            availableCategories.add(normalizedCategory(food));
+        }
+        List<String> categories = new ArrayList<>();
+        for (String category : CATEGORY_ORDER) {
+            if (availableCategories.contains(category)) {
+                categories.add(category);
+            }
+        }
+        categories.addAll(availableCategories);
+        Set<String> uniqueCategories = new LinkedHashSet<>(categories);
+        if (categories.isEmpty()) {
+            uniqueCategories.add(Food.CATEGORY_OTHER);
+        }
+        return new ArrayList<>(uniqueCategories);
+    }
+
+    private String normalizedCategory(Food food) {
+        if (Food.CATEGORY_MEAT_EGG.equals(food.category)
+                || Food.CATEGORY_DAIRY_BEAN.equals(food.category)) {
+            return Food.CATEGORY_MEAT_EGG_DAIRY_BEAN;
+        }
+        return food.category == null || food.category.trim().isEmpty()
+                ? Food.CATEGORY_OTHER : food.category;
+    }
+
+    @Nullable
+    private Food populateFoodGrid(String category, FoodPickerAdapter adapter) {
+        List<Food> foodsInCategory = new ArrayList<>();
+        for (Food food : allFoods) {
+            if (category.equals(normalizedCategory(food))) {
+                foodsInCategory.add(food);
+            }
+        }
+        // 中文 Collator 按拼音顺序比较，因此同一类别中的食物会按拼音首字母排列。
+        final Collator chineseCollator = Collator.getInstance(Locale.CHINA);
+        Collections.sort(foodsInCategory, new Comparator<Food>() {
+            @Override
+            public int compare(Food left, Food right) {
+                return chineseCollator.compare(left.name, right.name);
+            }
+        });
+        adapter.replaceFoods(foodsInCategory);
+        return adapter.getSelectedFood();
+    }
+
+    private void updateEstimate(@Nullable Food selectedFood, EditText gramsInput, TextView estimate) {
         Double grams = parseGrams(gramsInput.getText().toString());
-        if (grams == null || allFoods.isEmpty()) {
+        if (grams == null || selectedFood == null) {
             estimate.setText("");
             return;
         }
-        int position = spinner.getSelectedItemPosition();
-        Food food = allFoods.get(position < allFoods.size() ? position : 0);
         double kcal = HealthCalculations.calculateNutrientAmount(
-                food.caloriesPer100g, grams);
+                selectedFood.caloriesPer100g, grams);
         estimate.setText(getString(R.string.diet_kcal_estimate, formatKcal(kcal)));
     }
 
-    private void saveRecord(RadioGroup mealGroup, Spinner spinner, EditText gramsInput) {
+    private void saveRecord(RadioGroup mealGroup, @Nullable Food food, EditText gramsInput) {
         Double grams = parseGrams(gramsInput.getText().toString());
         if (grams == null) {
             gramsInput.setError(getString(R.string.diet_error_grams));
             return;
         }
-        if (allFoods.isEmpty()) {
+        if (food == null) {
             return;
         }
-        int position = spinner.getSelectedItemPosition();
-        Food food = allFoods.get(position < allFoods.size() ? position : 0);
 
         int checkedId = mealGroup.getCheckedRadioButtonId();
         String mealType = FoodRecord.MEAL_BREAKFAST;
@@ -386,7 +541,7 @@ public class DietFragment extends Fragment {
 
         FoodRecord record = new FoodRecord();
         record.foodId = food.id;
-        record.recordDate = DateTimeUtils.today();
+        record.recordDate = selectedRecordDate;
         record.mealType = mealType;
         record.weightGrams = grams;
         record.caloriesKcal = HealthCalculations.calculateNutrientAmount(
@@ -407,6 +562,8 @@ public class DietFragment extends Fragment {
                 CatInteractionHub.notifyMealLogged(record.caloriesKcal);
                 toast(R.string.diet_saved);
                 loadToday();
+                loadSelectedDateRecords();
+                loadWeekRecords();
             }
 
             @Override
@@ -444,6 +601,20 @@ public class DietFragment extends Fragment {
     private void toast(int messageRes) {
         if (isAdded()) {
             Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private static final class WeekDayView {
+        final View item;
+        final TextView status;
+        final TextView label;
+        final TextView date;
+
+        WeekDayView(View item) {
+            this.item = item;
+            status = item.findViewById(R.id.text_diet_week_day_status);
+            label = item.findViewById(R.id.text_diet_week_day_label);
+            date = item.findViewById(R.id.text_diet_week_day_date);
         }
     }
 }

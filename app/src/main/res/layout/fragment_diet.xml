@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <TextView
             style="@style/TextAppearance.HealthApp.Headline"
@@ -22,14 +22,14 @@
             style="@style/Widget.HealthApp.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             app:cardBackgroundColor="@color/health_primary_container">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="12dp">
 
                 <TextView
                     style="@style/TextAppearance.HealthApp.CardTitle"
@@ -90,24 +90,43 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 今日餐食 -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.HealthApp.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="10dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView style="@style/TextAppearance.HealthApp.CardTitle" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="@string/diet_week_title" />
+                <TextView android:id="@+id/text_diet_week_summary" style="@style/TextAppearance.HealthApp.CardValue"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <LinearLayout android:id="@+id/container_diet_week_days" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="horizontal" />
+                <TextView android:id="@+id/text_diet_week_note" style="@style/TextAppearance.HealthApp.Body"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="@string/diet_week_note" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 当前选中日期的餐食 -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.HealthApp.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="12dp">
 
-                <TextView
+                <TextView android:id="@+id/text_diet_meals_title"
                     style="@style/TextAppearance.HealthApp.CardTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/diet_today_meals" />
+                    android:text="@string/diet_today_meals_title" />
 
                 <LinearLayout
                     android:id="@+id/container_diet_meals"
@@ -121,8 +140,8 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_diet_add"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
             android:text="@string/diet_add_meal"
             android:textSize="18sp" />
     </LinearLayout>

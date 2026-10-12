@@ -16,12 +16,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <RadioButton
             android:id="@+id/radio_diet_breakfast"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:checked="true"
             android:text="@string/diet_meal_breakfast" />
 
@@ -30,6 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
             android:text="@string/diet_meal_lunch" />
 
         <RadioButton
@@ -37,6 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
             android:text="@string/diet_meal_dinner" />
 
         <RadioButton
@@ -44,6 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
             android:text="@string/diet_meal_snack" />
     </RadioGroup>
 
@@ -52,12 +58,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/diet_label_food" />
+        android:text="@string/diet_label_food_category" />
 
     <Spinner
-        android:id="@+id/spinner_diet_food"
+        android:id="@+id/spinner_diet_category"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        style="@style/TextAppearance.HealthApp.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/diet_label_food" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list_diet_food_picker"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/diet_food_grid_height"
         android:layout_marginTop="4dp" />
 
     <TextView

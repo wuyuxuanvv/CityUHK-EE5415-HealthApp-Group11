@@ -6,7 +6,10 @@ import com.example.healthapp.model.Exercise;
 import com.example.healthapp.model.Food;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Seed entry point for the built-in exercise and food libraries.
@@ -30,6 +33,10 @@ import java.util.List;
  */
 public final class SeedData {
 
+    /** Foods removed from the picker; referenced historical records remain intact. */
+    private static final Set<String> RETIRED_FOOD_NAMES = new HashSet<>(Arrays.asList(
+            "山药", "芋头", "豆腐干", "豆浆", "红豆", "黄豆", "绿豆", "炸鸡翅"));
+
     private SeedData() {
     }
 
@@ -40,10 +47,45 @@ public final class SeedData {
             if (database.exerciseDao().getAll().isEmpty()) {
                 database.exerciseDao().insertAll(buildExerciseSeeds());
             }
-            if (database.foodDao().getAll().isEmpty()) {
-                database.foodDao().insertAll(buildFoodSeeds());
-            }
+            syncFoodLibrary(database);
         });
+    }
+
+    /** Adds newly shipped foods and normalizes renamed categories without touching meal records. */
+    private static void syncFoodLibrary(AppDatabase database) {
+        List<Food> existingFoods = database.foodDao().getAll();
+        Set<String> existingNames = new HashSet<>();
+        for (Food food : existingFoods) {
+            existingNames.add(food.name);
+            if (isRetiredFoodName(food.name)) {
+                try {
+                    database.foodDao().delete(food);
+                } catch (RuntimeException ignored) {
+                    // FoodRecord uses RESTRICT; retain a referenced row only for history.
+                }
+                continue;
+            }
+            if (Food.CATEGORY_MEAT_EGG.equals(food.category)
+                    || Food.CATEGORY_DAIRY_BEAN.equals(food.category)) {
+                food.category = Food.CATEGORY_MEAT_EGG_DAIRY_BEAN;
+                database.foodDao().update(food);
+            }
+        }
+
+        List<Food> additions = new ArrayList<>();
+        for (Food seed : buildFoodSeeds()) {
+            if (!existingNames.contains(seed.name)) {
+                additions.add(seed);
+            }
+        }
+        if (!additions.isEmpty()) {
+            database.foodDao().insertAll(additions);
+        }
+    }
+
+    /** Lets the picker hide retired rows which must remain only for historical records. */
+    public static boolean isRetiredFoodName(String name) {
+        return name != null && RETIRED_FOOD_NAMES.contains(name);
     }
 
     // ======================================================================
@@ -144,35 +186,33 @@ public final class SeedData {
             {"吐司面包", Food.CATEGORY_STAPLE, 313, 8.3, 58.6, 5.1, "food_toast"},
             {"荞麦面", Food.CATEGORY_STAPLE, 337, 11.3, 66.5, 2.3, "food_buckwheat_noodles"},
             {"紫薯", Food.CATEGORY_STAPLE, 82, 1.6, 18.9, 0.2, "food_purple_sweet_potato"},
-            {"山药", Food.CATEGORY_STAPLE, 57, 1.9, 12.4, 0.2, "food_yam"},
-            {"芋头", Food.CATEGORY_STAPLE, 79, 2.2, 18.1, 0.2, "food_taro"},
             {"糙米", Food.CATEGORY_STAPLE, 348, 7.7, 72.7, 2.7, "food_brown_rice"},
             {"糯米", Food.CATEGORY_STAPLE, 350, 7.3, 78.3, 1.0, "food_glutinous_rice"},
             {"米粉", Food.CATEGORY_STAPLE, 346, 8.0, 78.0, 0.5, "food_rice_noodles"},
             {"饺子", Food.CATEGORY_STAPLE, 240, 8.0, 30.0, 9.0, "food_dumpling"},
             {"包子", Food.CATEGORY_STAPLE, 227, 7.0, 35.0, 6.0, "food_baozi"},
 
-            // ----- 肉蛋 -----
-            {"鸡蛋", Food.CATEGORY_MEAT_EGG, 144, 13.3, 2.8, 8.8, "food_egg"},
-            {"鸡蛋白", Food.CATEGORY_MEAT_EGG, 60, 11.6, 3.1, 0.1, "food_egg_white"},
-            {"鸡胸肉", Food.CATEGORY_MEAT_EGG, 133, 19.4, 2.5, 5.0, "food_chicken_breast"},
-            {"鸡腿", Food.CATEGORY_MEAT_EGG, 181, 16.0, 0.0, 13.0, "food_chicken_leg"},
-            {"鸡翅", Food.CATEGORY_MEAT_EGG, 194, 17.4, 4.6, 11.8, "food_chicken_wing"},
-            {"瘦牛肉", Food.CATEGORY_MEAT_EGG, 106, 20.2, 1.2, 2.3, "food_lean_beef"},
-            {"牛腩", Food.CATEGORY_MEAT_EGG, 332, 17.1, 0.0, 29.3, "food_beef_brisket"},
-            {"瘦猪肉", Food.CATEGORY_MEAT_EGG, 143, 20.3, 1.5, 6.2, "food_lean_pork"},
-            {"猪里脊", Food.CATEGORY_MEAT_EGG, 155, 20.2, 0.7, 7.9, "food_pork_tenderloin"},
-            {"五花肉", Food.CATEGORY_MEAT_EGG, 508, 7.7, 0.0, 53.0, "food_pork_belly"},
-            {"羊肉", Food.CATEGORY_MEAT_EGG, 203, 19.0, 0.0, 14.1, "food_lamb"},
-            {"三文鱼", Food.CATEGORY_MEAT_EGG, 139, 17.2, 0.0, 7.8, "food_salmon"},
-            {"鳕鱼", Food.CATEGORY_MEAT_EGG, 88, 20.4, 0.5, 0.5, "food_cod"},
-            {"带鱼", Food.CATEGORY_MEAT_EGG, 127, 17.7, 3.1, 4.9, "food_hairtail"},
-            {"虾", Food.CATEGORY_MEAT_EGG, 93, 18.6, 2.8, 0.8, "food_shrimp"},
-            {"鸭肉", Food.CATEGORY_MEAT_EGG, 240, 15.5, 0.2, 19.7, "food_duck"},
-            {"火腿肠", Food.CATEGORY_MEAT_EGG, 212, 14.0, 15.6, 10.4, "food_ham_sausage"},
-            {"猪肝", Food.CATEGORY_MEAT_EGG, 129, 19.3, 5.0, 3.5, "food_pork_liver"},
-            {"鸭蛋", Food.CATEGORY_MEAT_EGG, 180, 12.6, 3.1, 13.0, "food_duck_egg"},
-            {"培根", Food.CATEGORY_MEAT_EGG, 181, 22.3, 0.0, 10.0, "food_bacon"},
+            // ----- 肉蛋奶豆 -----
+            {"鸡蛋", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 144, 13.3, 2.8, 8.8, "food_egg"},
+            {"鸡蛋白", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 60, 11.6, 3.1, 0.1, "food_egg_white"},
+            {"鸡胸肉", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 133, 19.4, 2.5, 5.0, "food_chicken_breast"},
+            {"鸡腿", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 181, 16.0, 0.0, 13.0, "food_chicken_leg"},
+            {"鸡翅", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 194, 17.4, 4.6, 11.8, "food_chicken_wing"},
+            {"瘦牛肉", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 106, 20.2, 1.2, 2.3, "food_lean_beef"},
+            {"牛腩", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 332, 17.1, 0.0, 29.3, "food_beef_brisket"},
+            {"瘦猪肉", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 143, 20.3, 1.5, 6.2, "food_lean_pork"},
+            {"猪里脊", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 155, 20.2, 0.7, 7.9, "food_pork_tenderloin"},
+            {"五花肉", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 508, 7.7, 0.0, 53.0, "food_pork_belly"},
+            {"羊肉", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 203, 19.0, 0.0, 14.1, "food_lamb"},
+            {"三文鱼", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 139, 17.2, 0.0, 7.8, "food_salmon"},
+            {"鳕鱼", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 88, 20.4, 0.5, 0.5, "food_cod"},
+            {"带鱼", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 127, 17.7, 3.1, 4.9, "food_hairtail"},
+            {"虾", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 93, 18.6, 2.8, 0.8, "food_shrimp"},
+            {"鸭肉", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 240, 15.5, 0.2, 19.7, "food_duck"},
+            {"火腿肠", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 212, 14.0, 15.6, 10.4, "food_ham_sausage"},
+            {"猪肝", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 129, 19.3, 5.0, 3.5, "food_pork_liver"},
+            {"鸭蛋", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 180, 12.6, 3.1, 13.0, "food_duck_egg"},
+            {"培根", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 181, 22.3, 0.0, 10.0, "food_bacon"},
 
             // ----- 蔬菜 -----
             {"西兰花", Food.CATEGORY_VEGETABLE, 36, 4.1, 4.3, 0.6, "food_broccoli"},
@@ -213,20 +253,14 @@ public final class SeedData {
             {"樱桃", Food.CATEGORY_FRUIT, 46, 1.1, 10.2, 0.2, "food_cherry"},
             {"火龙果", Food.CATEGORY_FRUIT, 55, 1.1, 13.3, 0.2, "food_dragon_fruit"},
 
-            // ----- 奶豆 -----
-            {"牛奶", Food.CATEGORY_DAIRY_BEAN, 54, 3.0, 3.4, 3.2, "food_milk"},
-            {"酸奶", Food.CATEGORY_DAIRY_BEAN, 72, 2.5, 9.3, 2.7, "food_yogurt"},
-            {"豆浆", Food.CATEGORY_DAIRY_BEAN, 31, 3.0, 1.2, 1.6, "food_soy_milk"},
-            {"豆腐", Food.CATEGORY_DAIRY_BEAN, 82, 8.1, 4.2, 3.7, "food_tofu"},
-            {"豆腐干", Food.CATEGORY_DAIRY_BEAN, 140, 16.2, 11.5, 3.6, "food_dried_tofu"},
-            {"腐竹", Food.CATEGORY_DAIRY_BEAN, 459, 44.6, 22.3, 21.7, "food_tofu_skin"},
-            {"黄豆", Food.CATEGORY_DAIRY_BEAN, 390, 35.0, 34.2, 16.0, "food_soybean"},
-            {"绿豆", Food.CATEGORY_DAIRY_BEAN, 329, 21.6, 62.0, 0.8, "food_mung_bean"},
-            {"红豆", Food.CATEGORY_DAIRY_BEAN, 324, 20.2, 63.4, 0.6, "food_red_bean"},
-            {"奶酪", Food.CATEGORY_DAIRY_BEAN, 328, 25.7, 3.5, 23.5, "food_cheese"},
-            {"豆奶", Food.CATEGORY_DAIRY_BEAN, 30, 2.4, 1.8, 1.5, "food_soy_drink"},
-            {"内酯豆腐", Food.CATEGORY_DAIRY_BEAN, 50, 5.0, 3.3, 1.9, "food_silken_tofu"},
-            {"豌豆", Food.CATEGORY_DAIRY_BEAN, 313, 20.3, 65.8, 1.1, "food_pea"},
+            {"牛奶", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 54, 3.0, 3.4, 3.2, "food_milk"},
+            {"酸奶", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 72, 2.5, 9.3, 2.7, "food_yogurt"},
+            {"豆腐", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 82, 8.1, 4.2, 3.7, "food_tofu"},
+            {"腐竹", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 459, 44.6, 22.3, 21.7, "food_tofu_skin"},
+            {"奶酪", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 328, 25.7, 3.5, 23.5, "food_cheese"},
+            {"豆奶", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 30, 2.4, 1.8, 1.5, "food_soy_drink"},
+            {"内酯豆腐", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 50, 5.0, 3.3, 1.9, "food_silken_tofu"},
+            {"豌豆", Food.CATEGORY_MEAT_EGG_DAIRY_BEAN, 313, 20.3, 65.8, 1.1, "food_pea"},
 
             // ----- 坚果 -----
             {"花生", Food.CATEGORY_NUT, 574, 24.8, 21.7, 44.3, "food_peanut"},
@@ -246,11 +280,28 @@ public final class SeedData {
             {"啤酒", Food.CATEGORY_DRINK, 32, 0.4, 3.1, 0.0, "food_beer"},
             {"运动饮料", Food.CATEGORY_DRINK, 26, 0.0, 6.4, 0.0, "food_sports_drink"},
 
+            // ----- 快餐 -----
+            {"炸鸡", Food.CATEGORY_FAST_FOOD, 295, 20.0, 9.0, 19.0, "food_fried_chicken"},
+            {"汉堡", Food.CATEGORY_FAST_FOOD, 250, 13.0, 27.0, 10.0, "food_hamburger"},
+            {"薯条", Food.CATEGORY_FAST_FOOD, 312, 3.4, 41.0, 15.0, "food_french_fries"},
+            {"披萨", Food.CATEGORY_FAST_FOOD, 266, 11.0, 33.0, 10.0, "food_pizza"},
+            {"热狗", Food.CATEGORY_FAST_FOOD, 290, 10.0, 25.0, 17.0, "food_hot_dog"},
+            {"鸡米花", Food.CATEGORY_FAST_FOOD, 300, 16.0, 20.0, 17.0, "food_popcorn_chicken"},
+            {"蛋挞", Food.CATEGORY_FAST_FOOD, 328, 5.0, 35.0, 18.0, "food_egg_tart"},
+            {"墨西哥卷饼", Food.CATEGORY_FAST_FOOD, 229, 9.0, 25.0, 10.0, "food_burrito"},
+            {"炸洋葱圈", Food.CATEGORY_FAST_FOOD, 332, 4.0, 38.0, 18.0, "food_onion_rings"},
+
             // ----- 其他 -----
             {"白砂糖", Food.CATEGORY_OTHER, 400, 0.0, 99.9, 0.0, "food_sugar"},
             {"蜂蜜", Food.CATEGORY_OTHER, 321, 0.4, 79.5, 1.9, "food_honey"},
             {"巧克力", Food.CATEGORY_OTHER, 586, 4.3, 51.9, 40.1, "food_chocolate"},
             {"花生酱", Food.CATEGORY_OTHER, 600, 25.0, 20.0, 50.0, "food_peanut_butter"},
+            {"食用油", Food.CATEGORY_OTHER, 899, 0.0, 0.0, 99.9, "food_cooking_oil"},
+            {"食盐", Food.CATEGORY_OTHER, 0, 0.0, 0.0, 0.0, "food_salt"},
+            {"生抽", Food.CATEGORY_OTHER, 63, 5.6, 10.5, 0.1, "food_light_soy_sauce"},
+            {"陈醋", Food.CATEGORY_OTHER, 31, 2.1, 4.9, 0.0, "food_vinegar"},
+            {"蚝油", Food.CATEGORY_OTHER, 114, 5.9, 22.4, 0.0, "food_oyster_sauce"},
+            {"辣椒酱", Food.CATEGORY_OTHER, 74, 1.5, 14.0, 1.2, "food_chili_sauce"},
     };
 
     /**
