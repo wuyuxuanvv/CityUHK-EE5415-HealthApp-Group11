@@ -8,15 +8,11 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 /**
- * A single logged workout. Covers both calorie models:
- * <ul>
- *   <li>aerobic — {@link #durationMinutes} holds the real minutes, {@link #sets} and
- *       {@link #repsPerSet} stay 0;</li>
- *   <li>strength — {@link #sets} and {@link #repsPerSet} hold the user's input,
- *       {@link #durationMinutes} stays 0 so the "minutes today" total only counts aerobic work.</li>
- * </ul>
+ * A single logged workout. One shape for every record: which exercise, which day, how
+ * long it lasted, and the calories it burned. Strength and aerobic work are logged
+ * identically, by {@link #durationMinutes} — there is no sets/reps input.
  *
- * <p>{@link #estimatedCaloriesKcal} must be written for both kinds — the home mascot reads it.
+ * <p>{@link #estimatedCaloriesKcal} must always be written — the home mascot reads it.
  */
 @Entity(
         tableName = "exercise_records",
@@ -39,14 +35,6 @@ public class ExerciseRecord {
 
     @ColumnInfo(name = "duration_minutes")
     public int durationMinutes;
-
-    /** Strength only: number of sets. Aerobic records keep 0. */
-    @ColumnInfo(name = "sets", defaultValue = "0")
-    public int sets;
-
-    /** Strength only: reps per set, kept for display. Not part of the calorie formula. */
-    @ColumnInfo(name = "reps_per_set", defaultValue = "0")
-    public int repsPerSet;
 
     @ColumnInfo(name = "estimated_calories_kcal")
     public double estimatedCaloriesKcal;

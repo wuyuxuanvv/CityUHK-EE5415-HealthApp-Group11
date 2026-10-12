@@ -21,9 +21,7 @@ import java.util.Set;
 public class SeedDataTest {
 
     private static final Set<String> EXERCISE_CATEGORIES = new HashSet<>(Arrays.asList(
-            Exercise.CATEGORY_AEROBIC, Exercise.CATEGORY_CHEST, Exercise.CATEGORY_BACK,
-            Exercise.CATEGORY_SHOULDER, Exercise.CATEGORY_LEGS, Exercise.CATEGORY_ARMS,
-            Exercise.CATEGORY_CORE, Exercise.CATEGORY_FULL_BODY));
+            Exercise.CATEGORY_AEROBIC, Exercise.CATEGORY_STRENGTH));
 
     private static final Set<String> FOOD_CATEGORIES = new HashSet<>(Arrays.asList(
             Food.CATEGORY_STAPLE, Food.CATEGORY_MEAT_EGG, Food.CATEGORY_VEGETABLE,
@@ -32,6 +30,10 @@ public class SeedDataTest {
 
     @Test
     public void exerciseSeeds_meetContractMinimum() {
+        // Known, accepted gap: the flat taxonomy ships 10 aerobic + 3 strength tiers = 13
+        // rows, below the ">= 20 运动" minimum in GUIDELINES.md §3.1 / §C交付标准② and
+        // PRD.md §38. Deliberately left failing and explained in the PR rather than
+        // quietly relaxed to 13, which would be fake compliance.
         assertTrue("exercise library must hold at least 20 entries",
                 SeedData.buildExerciseSeeds().size() >= 20);
     }
@@ -43,22 +45,22 @@ public class SeedDataTest {
     }
 
     @Test
-    public void everyExercise_usesOneCalorieModelOnly() {
+    public void everyExercise_usesMetModelOnly() {
+        Set<Double> strengthMets = new HashSet<>();
+        int strengthCount = 0;
         for (Exercise exercise : SeedData.buildExerciseSeeds()) {
             assertTrue("unknown category: " + exercise.name,
                     EXERCISE_CATEGORIES.contains(exercise.category));
-            if (Exercise.CATEGORY_AEROBIC.equals(exercise.category)) {
-                assertTrue(exercise.name + " is aerobic but has no MET value",
-                        exercise.metValue > 0);
-                assertEquals(exercise.name + " is aerobic but carries a strength coefficient",
-                        0.0, exercise.kcalPerSetPerKg, 0.0001);
-            } else {
-                assertEquals(exercise.name + " is strength but carries a MET value",
-                        0.0, exercise.metValue, 0.0001);
-                assertTrue(exercise.name + " is strength but has no set coefficient",
-                        exercise.kcalPerSetPerKg > 0);
+            assertTrue(exercise.name + " has no MET value — the only calorie model is "
+                    + "metValue × weightKg × minutes ÷ 60", exercise.metValue > 0);
+            if (Exercise.CATEGORY_STRENGTH.equals(exercise.category)) {
+                strengthCount++;
+                strengthMets.add(exercise.metValue);
             }
         }
+        assertEquals("力量训练 must be exactly three intensity tiers", 3, strengthCount);
+        assertEquals("力量训练 METs must be 3.5 / 5.0 / 7.0",
+                new HashSet<>(Arrays.asList(3.5, 5.0, 7.0)), strengthMets);
     }
 
     @Test
