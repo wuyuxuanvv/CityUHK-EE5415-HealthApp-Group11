@@ -3,7 +3,7 @@
 > 面向全组。看完这一页你就知道：数据存在哪、怎么在 Android Studio 里看、代码里怎么取。
 >
 > **维护者**：C · 数据库（分支 `feature/database`）
-> **适用版本**：`AppDatabase.version = 3`
+> **适用版本**：`AppDatabase.version = 4`
 
 ---
 
@@ -17,7 +17,7 @@
 | 手机上的真实路径 | `/data/data/com.example.healthapp/databases/health_app.db` |
 | 代码位置 | `app/src/main/java/com/example/healthapp/database/` |
 | Entity 位置 | `app/src/main/java/com/example/healthapp/model/` |
-| 当前版本 | `version = 3` |
+| 当前版本 | `version = 4` |
 | 迁移策略 | `fallbackToDestructiveMigration()` —— 见 §6 |
 
 > 路径里的 `com.example.healthapp` 就是 `applicationId`（`app/build.gradle.kts:12`）。改包名路径就变。
@@ -26,7 +26,7 @@
 
 | 表名 | Entity | 性质 | 谁写 |
 |---|---|---|---|
-| `exercises` | `Exercise` | **内置字典**，39 条种子 | 只有 C（改种子） |
+| `exercises` | `Exercise` | **内置字典**，13 条种子（10 有氧 + 3 力量档位） | 只有 C（改种子） |
 | `foods` | `Food` | **内置字典**，106 条种子 | 只有 C（改种子） |
 | `exercise_records` | `ExerciseRecord` | 用户运动记录 | A · 运动 |
 | `food_records` | `FoodRecord` | 用户饮食记录 | B · 饮食 |
@@ -66,12 +66,15 @@
 SELECT COUNT(*) FROM exercises;
 SELECT COUNT(*) FROM foods;
 
--- 检查两类热量模型有没有串（有氧 met>0 且系数=0；力量反过来）
-SELECT category, met_value, kcal_per_set_per_kg, name
+-- 检查每条都有 MET、且 category 合法（唯一热量模型：MET × 体重 × 分钟 ÷ 60）
+SELECT name, category, met_value
 FROM exercises
-WHERE (category = '有氧' AND (met_value <= 0 OR kcal_per_set_per_kg != 0))
-   OR (category != '有氧' AND (met_value != 0 OR kcal_per_set_per_kg <= 0));
+WHERE met_value <= 0 OR category NOT IN ('有氧', '力量训练');
 -- 期望：0 行
+
+-- 再确认分类只有两个值、总数 13 条
+SELECT category, COUNT(*) FROM exercises GROUP BY category;
+-- 期望：有氧 10 / 力量训练 3
 ```
 
 ### 看不到数据时的排查顺序
@@ -117,9 +120,9 @@ repository.getAllExercises(new RepositoryCallback<List<Exercise>>() {
     @Override
     public void onSuccess(List<Exercise> exercises) {
         if (!isAdded()) return;              // Fragment 可能已经销毁
-        // 按部位分组
+        // 按两个顶层类目分组（DB 层没有 category 索引，全量拉回内存再筛）
         for (Exercise exercise : exercises) {
-            if (Exercise.CATEGORY_CHEST.equals(exercise.category)) { ... }
+            if (Exercise.CATEGORY_STRENGTH.equals(exercise.category)) { ... }
         }
     }
 
@@ -135,10 +138,8 @@ repository.getAllExercises(new RepositoryCallback<List<Exercise>>() {
 ExerciseRecord record = new ExerciseRecord();
 record.exerciseId = exercise.id;
 record.recordDate = DateTimeUtils.today();   // "yyyy-MM-dd"
-record.durationMinutes = minutes;            // 有氧填真实分钟；力量填 0
-record.sets = 0;                             // 力量填组数；有氧填 0
-record.repsPerSet = 0;
-record.estimatedCaloriesKcal = kcal;         // 两种都必须写，首页/总结都读它
+record.durationMinutes = minutes;            // 有氧和力量都填真实分钟
+record.estimatedCaloriesKcal = kcal;         // 必须写，首页小猫和总结页都读它
 repository.addExerciseRecord(record, callback);
 ```
 
@@ -155,7 +156,7 @@ repository.addExerciseRecord(record, callback);
 | `getFoodRecordsInRange(start, end)` | 区间饮食记录 |
 | `getTotalCaloriesForDate(date)` | 当日摄入 kcal |
 | `getTotalExerciseCaloriesForDate(date)` | 当日消耗 kcal |
-| `getExerciseMinutesForDate(date)` | 当日运动分钟（**只含有氧**） |
+| `getExerciseMinutesForDate(date)` | 当日运动分钟（有氧 + 力量都计入） |
 | `getExerciseCountForDate(date)` | 当日运动条数 |
 | `getDistinctExerciseDaysInRange(start, end)` | 区间内有运动的天数（周目标用） |
 | `hasFoodRecordsForDate(date)` | 当日有没有饮食记录 |
@@ -195,29 +196,40 @@ repository.addExerciseRecord(record, callback);
 
 ---
 
-## 5. 两类运动的热量怎么算
+## 5. 运动的热量怎么算
 
-全表共用 `exercises`，靠 `category` 区分，**唯一判据**：
+**只有一套公式，全表通用：**
 
-```java
-boolean isAerobic = Exercise.CATEGORY_AEROBIC.equals(exercise.category);
+```
+热量 kcal = metValue × 体重kg × 运动分钟 ÷ 60
 ```
 
-| 类别 | 公式 | 用哪列 |
+实现在 `common/HealthCalculations.estimateExerciseCalories(...)`（框架负责人维护，C 禁改 —— 本次重构**不需要动它**）。
+
+| 类别 | 代表行 | `met_value` | `duration_minutes` |
+|---|---|---|---|
+| **有氧**（`有氧`） | 散步 3.5 / 快走 5.0 / 跑步 9.8 … | >0 | 真实分钟 |
+| **力量训练**（`力量训练`） | 低强度 3.5 / 中等强度 5.0 / 高强度 7.0 | >0 | 真实分钟 |
+
+两条记录的**形状完全一样**，都写 `durationMinutes` 和 `estimatedCaloriesKcal`。
+
+**判据只有一个**（仅用于 UI 分组，不影响计算）：
+
+```java
+boolean isStrength = Exercise.CATEGORY_STRENGTH.equals(exercise.category);
+```
+
+举例（60kg × 30 分钟）：
+
+| 选择 | 计算 | 结果 |
 |---|---|---|
-| **有氧**（`有氧`） | `metValue × 体重kg × 分钟 ÷ 60` | `met_value` |
-| **力量**（其余 7 类） | `sets × kcalPerSetPerKg × 体重kg` | `kcal_per_set_per_kg` |
+| 低强度 | `3.5 × 60 × 30 ÷ 60` | 105 kcal |
+| 中等强度 | `5.0 × 60 × 30 ÷ 60` | 150 kcal |
+| 高强度 | `7.0 × 60 × 30 ÷ 60` | 210 kcal |
 
-**规则**：不参与计算的那一列**恒为 0**。
-
-| | `met_value` | `kcal_per_set_per_kg` | `duration_minutes` | `sets` | `reps_per_set` |
-|---|---|---|---|---|---|
-| 有氧记录 | >0 | **0.0** | 真实分钟 | **0** | **0** |
-| 力量记录 | **0.0** | >0 | **0** | ≥1 | ≥1 |
-
-> ⚠️ **绝不能把两个公式相加** —— 不用的那列是 0，加起来就是把结果抹成 0。
-> ⚠️ **力量必须校验 `sets ≥ 1`**，否则会出现「0 组算 0 kcal」的脏数据。
-> ⚠️ 力量记录 `duration_minutes` 填 0，导致 `getExerciseMinutesForDate` **不包含力量** —— 首页和总结的「分钟」只有有氧。这是既定口径，不是 bug。
+> ⚠️ **力量和有氧共用一套公式**，`ExerciseRecord` 里**没有**组数 / 次数 / 重量字段 —— 这是 `PRD.md:39` 的明确要求（「实际记录只包含动作、日期、运动时长和估算热量」）。
+> ⚠️ 力量的 `duration_minutes` 是**真实分钟**，所以 `getExerciseMinutesForDate` **包含力量**（旧版只含有氧）。
+> ⚠️ 有氧 MET 与力量档位 MET **有意撞值**（散步 / 低强度 都是 3.5）。不是复制粘贴错误。
 
 ---
 
@@ -226,7 +238,7 @@ boolean isAerobic = Exercise.CATEGORY_AEROBIC.equals(exercise.category);
 所有库内容集中在 **`SeedData.java` 顶部的两张常量表**，改一处即可：
 
 ```java
-// {name, category, metValue, kcalPerSetPerKg}
+// {name, category, metValue}
 private static final Object[][] EXERCISE_SEEDS = { ... };
 
 // {name, category, kcal/100g, protein, carbs, fat, imageResourceName}
@@ -257,7 +269,9 @@ private static final Object[][] FOOD_SEEDS = { ... };
 gradlew.bat testDebugUnitTest
 ```
 
-`SeedDataTest` 会检查：运动 ≥20 条、食物 ≥100 条、category 合法、两类热量模型没串、食物营养值非负、名字无重复。
+`SeedDataTest` 会检查：运动 ≥20 条、食物 ≥100 条、category 合法、每条运动都有 MET（力量恰好 3 档且 MET 为 3.5/5.0/7.0）、食物营养值非负、名字无重复。
+
+> ⚠️ **「运动 ≥20 条」这条目前是红的。** v4 把力量压成 3 个强度档位后只剩 13 条（10 有氧 + 3 力量），低于 `GUIDELINES.md` §3.1 与 `PRD.md:38` 要求的 ≥20。这是**已知取舍**，不是在等修 bug —— 断言被有意保留原样（没有偷偷改成 13），详细说明见 PR。
 
 ---
 
@@ -306,10 +320,10 @@ gradlew.bat testDebugUnitTest
 | | |
 |---|---|
 | 格式 | **`.gif`**（推荐，一个文件搞定） |
-| 命名 | `exercise_demo_` 前缀，如 `exercise_demo_incline_press.gif` |
+| 命名 | `exercise_demo_` 前缀，如 `exercise_demo_running.gif` |
 | 尺寸建议 | 宽 240–360 px，10–20 帧，1–2 秒无缝循环 |
 | 体积 | 单张 ≤ 500 KB |
-| 数据库字段 | `exercises.demo_resource_name` 填 `exercise_demo_incline_press`（**不带后缀**） |
+| 数据库字段 | `exercises.demo_resource_name` 填 `exercise_demo_running`（**不带后缀**） |
 
 #### ⚠️ GIF 的三条硬约束
 
@@ -444,7 +458,7 @@ anim.start();
 
 ---
 
-### 7.6 ⚠️ 四个已知的坑
+### 7.6 ⚠️ 五个已知的坑
 
 **坑 1：`start()` 的调用时机**
 
@@ -461,15 +475,17 @@ drawable 还没挂到窗口上时调 `start()` 会**静默失效** —— 不报
 
 **坑 3：运动动图字段全是 null —— 这条最容易被漏**
 
-`exercises.demo_resource_name` **39 条全是 null**，`SeedData.java` 从来没给它赋过值。
+`exercises.demo_resource_name` **13 条全是 null**，`SeedData.java` 从来没给它赋过值。
 
 所以就算 GIF 放好了、加载代码也写好了，`getIdentifier(null, ...)` 依然返回 `0` → **图片区一片空白**，同样是静默失败。
 
-**补这个字段是 C 的活**：在 `SeedData.java` 里赋值，并**升 `AppDatabase.version`**（3 → 4），否则对已安装的 App 不生效（原因见 §6）。
+**补这个字段是 C 的活**：在 `SeedData.java` 里赋值，并**升 `AppDatabase.version`**（下一个可用版本号），否则对已安装的 App 不生效（原因见 §6）。
 
-**坑 4：列表里让 39 个动图同时播放**
+> ⚠️ **版本号会撞车**：本文件原先在这里预告了「3 → 4」，但 **v4 已经被「力量压成三个强度档位」用掉了**。谁后合并谁负责重新编号，**不要双重 +1**。
 
-运动库列表如果有 39 个动作，每个都 `start()` → **严重卡顿 + 耗电**。
+**坑 4：列表里让 13 个动图同时播放**
+
+运动库列表如果有 13 个动作，每个都 `start()` → **严重卡顿 + 耗电**。
 
 **推荐做法**：
 
@@ -477,6 +493,14 @@ drawable 还没挂到窗口上时调 `start()` 会**静默失效** —— 不报
 - **点进详情页**：才 `start()` 播放动图
 
 性能最好，体验也对。
+
+**坑 5：力量训练那 3 个档位没有图标**
+
+`ExerciseIconMapper`（A · 运动）是按**动作名**硬编码 `switch` 的，只覆盖了 10 个有氧动作名，其余一律返回 `0`（无图标）。
+
+v4 新增的 `低强度` / `中等强度` / `高强度` 三条**都不在里面** → 运动列表里这三个档位**没有图标**（其余表现正常，不崩溃）。
+
+**这是 A 的活**：要么给 `ExerciseIconMapper` 补 3 个 `case`（再由 D 出 3 张图），要么接受无图标。**数据库这边不需要改任何东西。**
 
 ---
 
@@ -501,7 +525,7 @@ drawable 还没挂到窗口上时调 `start()` 会**静默失效** —— 不报
 | 运动 GIF | 单张 ≤ 500 KB |
 | 帧动画 | 单帧 ≤ 100 KB，单图总 ≤ 1 MB |
 
-图片全都会打进 APK，**体积直接累加到安装包上**。106 张食物图 + 39 个动图，不控制的话 APK 会很大。
+图片全都会打进 APK，**体积直接累加到安装包上**。106 张食物图 + 13 个动图，不控制的话 APK 会很大。
 
 ---
 
@@ -515,7 +539,7 @@ drawable 还没挂到窗口上时调 `start()` 会**静默失效** —— 不报
 | `HealthRepository` 方法签名 | **框架负责人** | C 禁改；A/B 用的人多，动了全组崩 |
 | `MainActivity`、`common/`、Gradle、Manifest | **框架负责人** | 未经确认不得改 |
 | `res/drawable/` 图片 / 动图文件 | **D · UI** | C 只在数据库里留名字 |
-| 力量热量公式 `estimateStrengthCalories` | **框架负责人** | 需加在 `common/HealthCalculations.java`，C 禁改 |
+| 运动热量公式 `estimateExerciseCalories` | **框架负责人** | 在 `common/HealthCalculations.java`；**有氧和力量共用这一套**，C 禁改但本次无需改 |
 
 ---
 
@@ -536,8 +560,8 @@ drawable 还没挂到窗口上时调 `start()` 会**静默失效** —— 不报
 **Q：`getCurrentWeightKg` 拿到 null 怎么办？**
 说明用户还没填资料。必须走「请先填资料」提示分支，**不准按默认体重算**。
 
-**Q：运动记录里为什么有 `duration_minutes = 0` 的行？**
-那是力量训练。力量只记组数，分钟只算有氧（§5）。不是脏数据。
+**Q：力量训练怎么录？只填时长就够了吗？**
+是的。力量和有氧一样**只填分钟**（在低 / 中 / 高三个强度档位里选一个），热量同样按 `MET × 体重 × 分钟 ÷ 60` 算。数据库里**没有**组数、次数、重量字段 —— 这是 `PRD.md:39` 的明确要求。详见 §5。
 
 **Q：总结页想显示蛋白质，要加字段吗？**
 不用。`food_records` 里 `protein_grams` / `carbs_grams` / `fat_grams` 已经在写了。只需给 `FoodRecordDao` 加一个 `SUM` 查询 —— 但那是改公共 DAO，要走框架负责人。

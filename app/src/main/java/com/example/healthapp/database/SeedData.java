@@ -51,71 +51,35 @@ public final class SeedData {
     // ======================================================================
 
     /**
-     * {name, category, metValue, kcalPerSetPerKg}
+     * {name, category, metValue}
      *
-     * <p>Aerobic rows carry a real MET value and a zero coefficient; strength rows carry
-     * a zero MET value and a positive coefficient. Which formula applies is decided by
-     * category, never by "whichever column is non-zero".
+     * <p>Every row uses the same MET model, {@code MET × weightKg × minutes ÷ 60};
+     * strength is logged by time like aerobic work. There is no per-set coefficient.
      *
-     * <p>The strength coefficient assumes roughly 2 minutes per set including rest at an
-     * intensity of about 3-6 MET, giving kcal/(set·kg) = MET × 2 / 60 ≈ 0.10-0.20.
-     * Isolations sit at the low end, big compounds and full-body work at the high end.
+     * <p>有氧 rows are named movements. 力量训练 is deliberately coarse — exactly three
+     * rows, one per intensity tier, each with a fixed MET (低 3.5 / 中 5.0 / 高 7.0) —
+     * because the user logs a duration, not a movement.
+     *
+     * <p>The aerobic METs and the three tier METs overlap on purpose (散步/低强度 both
+     * 3.5, 快走/中等强度 both 5.0); that is not a copy-paste slip.
      */
     private static final Object[][] EXERCISE_SEEDS = {
-            // ----- 有氧（MET 模型）-----
-            {"散步", Exercise.CATEGORY_AEROBIC, 3.5, 0.0},
-            {"快走", Exercise.CATEGORY_AEROBIC, 5.0, 0.0},
-            {"慢跑", Exercise.CATEGORY_AEROBIC, 7.0, 0.0},
-            {"跑步", Exercise.CATEGORY_AEROBIC, 9.8, 0.0},
-            {"骑行", Exercise.CATEGORY_AEROBIC, 6.8, 0.0},
-            {"游泳", Exercise.CATEGORY_AEROBIC, 6.0, 0.0},
-            {"跳绳", Exercise.CATEGORY_AEROBIC, 11.0, 0.0},
-            {"椭圆机", Exercise.CATEGORY_AEROBIC, 5.0, 0.0},
-            {"爬楼梯", Exercise.CATEGORY_AEROBIC, 8.8, 0.0},
-            {"有氧操", Exercise.CATEGORY_AEROBIC, 7.3, 0.0},
+            // ----- 有氧 -----
+            {"散步", Exercise.CATEGORY_AEROBIC, 3.5},
+            {"快走", Exercise.CATEGORY_AEROBIC, 5.0},
+            {"慢跑", Exercise.CATEGORY_AEROBIC, 7.0},
+            {"跑步", Exercise.CATEGORY_AEROBIC, 9.8},
+            {"骑行", Exercise.CATEGORY_AEROBIC, 6.8},
+            {"游泳", Exercise.CATEGORY_AEROBIC, 6.0},
+            {"跳绳", Exercise.CATEGORY_AEROBIC, 11.0},
+            {"椭圆机", Exercise.CATEGORY_AEROBIC, 5.0},
+            {"爬楼梯", Exercise.CATEGORY_AEROBIC, 8.8},
+            {"有氧操", Exercise.CATEGORY_AEROBIC, 7.3},
 
-            // ----- 胸 -----
-            {"俯卧撑", Exercise.CATEGORY_CHEST, 0.0, 0.13},
-            {"卧推", Exercise.CATEGORY_CHEST, 0.0, 0.15},
-            {"上斜卧推", Exercise.CATEGORY_CHEST, 0.0, 0.15},
-            {"哑铃飞鸟", Exercise.CATEGORY_CHEST, 0.0, 0.12},
-            {"双杠臂屈伸", Exercise.CATEGORY_CHEST, 0.0, 0.15},
-
-            // ----- 背 -----
-            {"引体向上", Exercise.CATEGORY_BACK, 0.0, 0.17},
-            {"高位下拉", Exercise.CATEGORY_BACK, 0.0, 0.14},
-            {"坐姿划船", Exercise.CATEGORY_BACK, 0.0, 0.14},
-            {"杠铃划船", Exercise.CATEGORY_BACK, 0.0, 0.16},
-            {"硬拉", Exercise.CATEGORY_BACK, 0.0, 0.18},
-
-            // ----- 肩 -----
-            {"哑铃推举", Exercise.CATEGORY_SHOULDER, 0.0, 0.14},
-            {"侧平举", Exercise.CATEGORY_SHOULDER, 0.0, 0.10},
-            {"前平举", Exercise.CATEGORY_SHOULDER, 0.0, 0.10},
-            {"面拉", Exercise.CATEGORY_SHOULDER, 0.0, 0.11},
-
-            // ----- 腿 -----
-            {"深蹲", Exercise.CATEGORY_LEGS, 0.0, 0.18},
-            {"弓步蹲", Exercise.CATEGORY_LEGS, 0.0, 0.16},
-            {"腿举", Exercise.CATEGORY_LEGS, 0.0, 0.15},
-            {"臀桥", Exercise.CATEGORY_LEGS, 0.0, 0.12},
-            {"提踵", Exercise.CATEGORY_LEGS, 0.0, 0.09},
-
-            // ----- 手臂 -----
-            {"二头弯举", Exercise.CATEGORY_ARMS, 0.0, 0.10},
-            {"三头下压", Exercise.CATEGORY_ARMS, 0.0, 0.10},
-            {"锤式弯举", Exercise.CATEGORY_ARMS, 0.0, 0.10},
-
-            // ----- 核心 -----
-            {"平板支撑", Exercise.CATEGORY_CORE, 0.0, 0.12},
-            {"卷腹", Exercise.CATEGORY_CORE, 0.0, 0.11},
-            {"俄罗斯转体", Exercise.CATEGORY_CORE, 0.0, 0.12},
-            {"仰卧抬腿", Exercise.CATEGORY_CORE, 0.0, 0.12},
-
-            // ----- 全身 -----
-            {"波比跳", Exercise.CATEGORY_FULL_BODY, 0.0, 0.20},
-            {"壶铃摆动", Exercise.CATEGORY_FULL_BODY, 0.0, 0.19},
-            {"战绳", Exercise.CATEGORY_FULL_BODY, 0.0, 0.18},
+            // ----- 力量训练（三个强度档位）-----
+            {"低强度", Exercise.CATEGORY_STRENGTH, 3.5},
+            {"中等强度", Exercise.CATEGORY_STRENGTH, 5.0},
+            {"高强度", Exercise.CATEGORY_STRENGTH, 7.0},
     };
 
     // ======================================================================
@@ -261,7 +225,7 @@ public final class SeedData {
         List<Exercise> seeds = new ArrayList<>(EXERCISE_SEEDS.length);
         for (Object[] row : EXERCISE_SEEDS) {
             seeds.add(newExercise((String) row[0], (String) row[1],
-                    ((Number) row[2]).doubleValue(), ((Number) row[3]).doubleValue()));
+                    ((Number) row[2]).doubleValue()));
         }
         return seeds;
     }
@@ -278,13 +242,11 @@ public final class SeedData {
         return seeds;
     }
 
-    private static Exercise newExercise(String name, String category, double metValue,
-                                        double kcalPerSetPerKg) {
+    private static Exercise newExercise(String name, String category, double metValue) {
         Exercise exercise = new Exercise();
         exercise.name = name;
         exercise.category = category;
         exercise.metValue = metValue;
-        exercise.kcalPerSetPerKg = kcalPerSetPerKg;
         return exercise;
     }
 

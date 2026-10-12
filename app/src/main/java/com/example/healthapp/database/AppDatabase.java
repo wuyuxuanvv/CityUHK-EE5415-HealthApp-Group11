@@ -24,8 +24,9 @@ import com.example.healthapp.model.UserProfile;
                 Food.class,
                 FoodRecord.class
         },
-        // v3: Exercise + kcal_per_set_per_kg, ExerciseRecord + sets/reps_per_set, Food + category.
-        version = 3,
+        // v4: flat exercise taxonomy (有氧/力量训练), single MET model —
+        //     dropped exercises.kcal_per_set_per_kg and exercise_records.sets/reps_per_set.
+        version = 4,
         exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "health_app.db";
