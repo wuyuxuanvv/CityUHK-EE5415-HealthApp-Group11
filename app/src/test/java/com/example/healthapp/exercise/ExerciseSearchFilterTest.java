@@ -37,6 +37,40 @@ public class ExerciseSearchFilterTest {
     }
 
     @Test
+    public void filter_groupsStrengthLowToHighAndMatchesDisplayedName() {
+        Exercise high = exercise("高强度", 7.0);
+        Exercise low = exercise("低强度", 3.5);
+        Exercise middle = exercise("中等强度", 5.0);
+        high.category = Exercise.CATEGORY_STRENGTH;
+        low.category = Exercise.CATEGORY_STRENGTH;
+        middle.category = Exercise.CATEGORY_STRENGTH;
+        List<Exercise> exercises = Arrays.asList(high, exercise("快走", 5.0), middle, low);
+
+        List<Exercise> all = ExerciseSearchFilter.filter(exercises, "",
+                item -> displayName(item));
+        assertEquals("快走", all.get(0).name);
+        assertEquals("低强度", all.get(1).name);
+        assertEquals("中等强度", all.get(2).name);
+        assertEquals("高强度", all.get(3).name);
+
+        List<Exercise> matching = ExerciseSearchFilter.filter(exercises, "力量训练",
+                item -> displayName(item));
+        assertEquals(3, matching.size());
+        assertEquals("低强度", matching.get(0).name);
+        assertEquals("中等强度", matching.get(1).name);
+        assertEquals("高强度", matching.get(2).name);
+        assertEquals(1, ExerciseSearchFilter.filter(exercises, "中等强度",
+                item -> displayName(item)).size());
+    }
+
+    private static String displayName(Exercise exercise) {
+        if (Exercise.CATEGORY_STRENGTH.equals(exercise.category)) {
+            return "力量训练（" + exercise.name + "）";
+        }
+        return exercise.name;
+    }
+
+    @Test
     public void parseMinutes_rejectsInvalidBoundaries() {
         assertNull(ExerciseFragment.parseMinutes("0"));
         assertNull(ExerciseFragment.parseMinutes("601"));

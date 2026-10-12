@@ -30,12 +30,30 @@ public class SeedDataTest {
 
     @Test
     public void exerciseSeeds_meetContractMinimum() {
-        // Known, accepted gap: the flat taxonomy ships 10 aerobic + 3 strength tiers = 13
-        // rows, below the ">= 20 运动" minimum in GUIDELINES.md §3.1 / §C交付标准② and
-        // PRD.md §38. Deliberately left failing and explained in the PR rather than
-        // quietly relaxed to 13, which would be fake compliance.
+        assertEquals("10 original aerobic + 9 new aerobic + 3 strength tiers", 22,
+                SeedData.buildExerciseSeeds().size());
         assertTrue("exercise library must hold at least 20 entries",
                 SeedData.buildExerciseSeeds().size() >= 20);
+    }
+
+    @Test
+    public void newExercises_haveRequestedMetValues() {
+        String[] names = {"羽毛球", "篮球", "足球", "乒乓球", "网球", "排球",
+                "瑜伽", "普拉提", "HIIT 间歇训练"};
+        double[] mets = {5.5, 7.5, 7.0, 4.0, 6.8, 3.0, 2.3, 2.8, 11.0};
+        List<Exercise> seeds = SeedData.buildExerciseSeeds();
+        for (int i = 0; i < names.length; i++) {
+            Exercise match = null;
+            for (Exercise exercise : seeds) {
+                if (names[i].equals(exercise.name)) {
+                    match = exercise;
+                    break;
+                }
+            }
+            assertTrue("missing exercise: " + names[i], match != null);
+            assertEquals(names[i] + " MET", mets[i], match.metValue, 0.0);
+            assertEquals(names[i] + " category", Exercise.CATEGORY_AEROBIC, match.category);
+        }
     }
 
     @Test

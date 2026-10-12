@@ -72,6 +72,9 @@
     <string name="exercise_library_empty">运动动作库暂无数据</string>
     <string name="exercise_search_empty">没有找到匹配的运动动作</string>
     <string name="exercise_search_result_details">%1$s · MET %2$s</string>
+    <string name="exercise_strength_display_name">力量训练（%1$s）</string>
+    <string name="exercise_strength_medium_label">中强度</string>
+    <string name="exercise_category_anaerobic">无氧</string>
     <string name="exercise_selected_none">尚未选择运动动作</string>
     <string name="exercise_selected_action">已选择：%1$s · MET %2$s</string>
     <string name="exercise_date_label">运动日期</string>
