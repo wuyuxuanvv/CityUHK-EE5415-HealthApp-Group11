@@ -1,552 +1,194 @@
-# HealthApp — Personal Health Management System
+# HealthApp — Personal Health Management
 
-### City University of Hong Kong | EE5415 Course Project
+**City University of Hong Kong (CityUHK) · EE5415: Mobile Applications Design and Development · Group 11 · 2026**
 
-**Group 11 · Android Application Development**
+A lightweight, offline-first Android course project for tracking exercise, food intake, and everyday health goals.
 
-[English](#english) | [简体中文](#简体中文)
+一款面向日常运动、饮食记录与健康目标管理的轻量级、离线优先 Android 课程项目。
 
----
+**[English](#english) | [简体中文](#简体中文)**
 
-# English
-
-## 1. Project Overview
-
-HealthApp is a personal health management Android application developed as a group course project for **EE5415 at the City University of Hong Kong (CityUHK)**.
-
-The project is developed by Group 11, a team of six students, with the aim of creating a simple and accessible application that helps users manage their daily exercise, dietary intake, and sleep habits.
-
-By integrating exercise tracking, dietary management, sleep recording, and personal health statistics into a single application, HealthApp provides users with a convenient way to monitor their daily activities and track their progress toward personal health goals.
-
-The application is designed to operate offline, with user data stored locally on the Android device.
-
-**Project Information**
-
-| Item | Description |
-|---|---|
-| Institution | City University of Hong Kong (CityUHK) |
-| Course | EE5415 |
-| Project | Personal Health Management Android Application |
-| Group | Group 11 |
-| Team Size | 6 Members |
-| Platform | Android |
-| Development Language | Java |
-| UI Development | XML |
-| Local Database | Room (SQLite) |
-| Development Environment | Android Studio |
-| Version Control | Git & GitHub |
-
-> **Project Status:** Under Development
->
-> The initial Android project and shared development framework have been established. Individual functional modules are being developed and integrated by the team.
+> **Project status / 项目状态:** Under active development and integration / 正在开发与联调。This README describes the publicly visible `main` branch reviewed on **12 October 2026**; it is not a claim that all features have passed final acceptance tests.
 
 ---
 
-## 2. Key Features
+## English
 
-HealthApp is designed around five primary functional modules.
+### About the project
 
-### 2.1 Personal Profile
+HealthApp is developed by **Group 11** for **EE5415 — Mobile Applications Design and Development** at the **City University of Hong Kong**. Our goal is to build a straightforward personal health tracker rather than a professional fitness-training or medical application.
 
-Users can create and manage their personal health profiles.
+The app combines **exercise logging, food tracking, a daily/weekly summary, a personal profile, and an interactive cat mascot**. Core records are stored on the device with **Room (SQLite)**; no account, cloud backend, or internet connection is required for normal use.
 
-Planned features include:
+### Main features and progress
 
-- Personal information management, including age, gender, height, and weight.
-- Weekly exercise goal configuration.
-- Daily calorie intake target.
-- Daily sleep duration target.
-- Local storage and modification of personal information.
+| Module | Features currently present in source | Status |
+| --- | --- | --- |
+| **Home** | Today's exercise and calorie overview, goal-related feedback, interactive cat mascot reacting to logged activities | Implemented; integration and polish ongoing |
+| **Exercise** | Searchable library of **22 exercise types** (including three strength-training intensities), static activity icons, time-based logging, MET calorie estimates, current-week date selection and record deletion | Core recording available; editing and plan/check-in workflows remain follow-up work |
+| **Diet** | Food search, breakfast/lunch/dinner/snack records, portion input in grams, calorie and nutrient estimates, daily intake display and date-based records | Core features available; further testing ongoing |
+| **Summary** | Daily exercise minutes, calorie intake and exercise expenditure, weekly exercise chart, and recent exercise/food history | Code integrated; final verification and refinement pending |
+| **Profile** | Basic profile, avatar, body measurements and exercise/calorie goals | Implemented; integration testing ongoing |
 
-Personal information will be used to support exercise calorie estimation, goal tracking, and health statistics.
+**Scope note:** Sleep tracking was removed from the current product scope. Animated exercise tutorials, AI recommendations, wearable-device integration, cloud sync, and multi-user accounts are not part of this version.
 
-### 2.2 Exercise Management
+### How calorie estimates work
 
-The exercise module allows users to record daily physical activities and manage weekly exercise plans.
+For a recorded exercise, the app uses a simplified metabolic equivalent (MET) model:
 
-Planned features include:
+`Estimated exercise energy (kcal) = MET × body weight (kg) × duration (minutes) / 60`
 
-- Exercise library with visual demonstrations.
-- Exercise selection and duration recording.
-- Estimated calorie expenditure based on exercise type, duration, and body weight.
-- Weekly exercise plan creation and management.
-- Exercise completion tracking.
-- Exercise history.
+Food intake is estimated from portion size and the food database's nutrient values, typically per 100 g. **“Net calories” in this project means recorded intake minus recorded exercise expenditure; it is not a complete daily energy-balance calculation** and does not account for all other energy expenditure.
 
-Calorie expenditure is calculated using a simplified MET-based estimation method.
+### Technology stack
 
-The calculated values are intended for general reference rather than precise physiological measurement.
+| Area | Technology |
+| --- | --- |
+| Platform | Native Android (minimum Android API 26) |
+| Programming | Java 11 |
+| User interface | XML layouts, Android Views, Fragments, Material Components |
+| Local database | Room / SQLite |
+| Asynchronous data access | `DatabaseExecutor`, `HealthRepository`, `RepositoryCallback` |
+| Build | Gradle Kotlin DSL (build scripts only) |
+| Development and collaboration | Android Studio, Git, GitHub, feature branches and pull requests |
 
-### 2.3 Dietary Management
+**Architecture in brief:** Exercise and diet records are saved in Room. Screens read shared data through `HealthRepository`, rather than passing totals directly between Fragments. `CatInteractionHub` provides a separate, narrow event channel for mascot reactions.
 
-The dietary module helps users monitor their daily food consumption and nutritional intake.
+### Getting started
 
-Planned features include:
+1. Install **Android Studio**, the Android SDK, and Git.
+2. Clone the repository: `git clone https://github.com/wuyuxuanvv/android-group11.git`
+3. Open the cloned **`android-group11`** directory as an Android Studio project.
+4. Let **Gradle Sync** finish and install the requested SDK components if prompted.
+5. Run the **`app`** configuration on an emulator or Android device with **API 26+**.
 
-- Built-in food database with nutritional information.
-- Food search and selection.
-- Food intake recording by weight.
-- Meal categorization: breakfast, lunch, dinner, and snacks.
-- Daily calorie and macronutrient calculations.
-- Comparison between actual calorie intake and daily calorie targets.
-- Dietary history.
+On Windows PowerShell, run a local build and unit tests from the repository root:
 
-Nutritional information is calculated based on the recorded food quantities and the corresponding values in the food database.
+```powershell
+.\gradlew.bat testDebugUnitTest assembleDebug
+```
 
-### 2.4 Sleep Management
+Build or test success must be checked in your own environment; a public source snapshot alone does not verify runtime behavior.
 
-The sleep module provides a simple way to record sleeping habits and monitor sleep duration.
-
-Planned features include:
-
-- Manual recording of bedtime and wake-up time.
-- Automatic calculation of total sleep duration.
-- Support for sleep sessions spanning midnight.
-- Sleep history.
-- Comparison between actual sleep duration and personal sleep goals.
-- Simple rule-based sleep feedback.
-
-The application does not require wearable devices or external sleep monitoring equipment.
-
-### 2.5 Dashboard and Health Statistics
-
-The dashboard integrates information from the exercise, dietary, and sleep modules.
-
-Planned features include:
-
-- Daily exercise completion statistics.
-- Daily calorie intake summary.
-- Recent sleep duration.
-- Personal goal tracking.
-- Historical records.
-- Weekly activity and health trends.
-- Simple rule-based feedback based on recorded data.
-
-The dashboard provides a centralized overview of users' daily health management activities.
-
----
-
-## 3. Technology Stack
-
-HealthApp is developed as a native Android application.
-
-| Component | Technology |
-|---|---|
-| Programming Language | Java |
-| User Interface | XML / Android Views |
-| Development Environment | Android Studio |
-| Database | Room (SQLite) |
-| Application Architecture | Activity + Fragment |
-| Data Visualization | Android UI Components |
-| Version Control | Git |
-| Collaboration Platform | GitHub |
-
-The application follows a modular development approach.
-
-Each team member is responsible for a designated functional module, while shared database structures, navigation components, and development interfaces are maintained within the common project framework.
-
-### Offline-First Design
-
-HealthApp is designed to operate without a backend server.
-
-User profiles, exercise records, dietary records, and sleep records are stored locally using Room.
-
-The project does not require cloud storage, online accounts, or external AI services for its core functionality.
-
----
-
-## 4. Project Structure
-
-The Android project is organized into functional packages to support collaborative development.
+### Repository guide
 
 ```text
 android-group11/
-│
-├── app/
-│   └── src/main/
-│       │
-│       ├── java/
-│       │   └── com/example/healthapp/
-│       │       │
-│       │       ├── MainActivity.java
-│       │       │
-│       │       ├── common/
-│       │       ├── database/
-│       │       ├── model/
-│       │       ├── profile/
-│       │       ├── exercise/
-│       │       ├── diet/
-│       │       ├── sleep/
-│       │       ├── home/
-│       │       └── extra/
-│       │
-│       └── res/
-│           ├── layout/
-│           ├── drawable/
-│           └── values/
-│
-├── docs/
-│   ├── PRD.md
-│   ├── TEAM.md
-│   ├── DEVELOPMENT_GUIDE.md
-│   └── MEMBER_GUIDE.md
-│
-├── AGENTS.md
-│
+├── app/src/main/java/com/example/healthapp/
+│   ├── common/       # Shared calculations, dates, and mascot events
+│   ├── database/     # Room database, DAOs, repository, seed data
+│   ├── model/        # Persistent entities and shared models
+│   ├── home/         # Home screen and interactive mascot
+│   ├── exercise/     # Exercise selection and logging
+│   ├── diet/         # Food and nutrition logging
+│   ├── summary/      # Daily/weekly summaries and history
+│   └── profile/      # User profile and goals
+├── app/src/main/res/ # Layouts, drawables, strings, themes
+├── docs/             # Requirements and development documents
 └── README.md
 ```
 
-The structure separates shared infrastructure from individual functional modules.
+Useful references:
 
-Each team member develops their assigned functionality within the corresponding package while following the shared development guidelines.
+- [`docs/GUIDELINES.md`](docs/GUIDELINES.md) — team conventions and module responsibilities.
+- [`docs/DATABASE_USAGE.md`](docs/DATABASE_USAGE.md) — database and repository usage notes.
+- [`AGENTS.md`](AGENTS.md) — repository-specific AI-assisted development instructions.
+- [`docs/PRD.md`](docs/PRD.md), [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md) — historical planning references; these explicitly identify some older content as superseded.
 
----
+**Documentation caveat:** Some planning documents reflect an older navigation or exercise-library design. Check the latest `main` branch and coordinate shared-interface changes with the team before implementing them.
 
-## 5. Team Collaboration
+### Teamwork and academic context
 
-HealthApp is developed collaboratively by six students from Group 11.
+This is a **six-person course project**. Development work is divided across the shared framework/profile, Exercise, Diet, database/data contracts, UI/assets, and home/summary visualization. Team members develop on feature branches and submit changes through pull requests.
 
-| Member | Responsibilities |
-|---|---|
-| Member 1 | Project framework, database infrastructure, navigation, personal profile, and final integration |
-| Member 2 | Exercise tracking, calorie estimation, weekly exercise plans, and exercise records |
-| Member 3 | Food database, dietary recording, nutritional calculations, and calorie target management |
-| Member 4 | Sleep recording, duration calculation, and sleep feedback |
-| Member 5 | Dashboard, health statistics, historical records, and trend visualization |
-| Member 6 | Goal recommendations, reminders, data management, and application testing |
+We hope this repository helps future EE5415 students understand the organization of a collaborative Android project. Please follow your own course's academic-integrity requirements when using it for reference.
 
-All team members work within the same Android project and follow a unified database and interface specification.
-
-Individual development takes place on dedicated Git branches, with completed functionality integrated into the main branch through Pull Requests.
+**Disclaimer:** HealthApp is an educational prototype, not a medical device or a source of medical advice. Energy and nutritional estimates are approximate. Some visual assets may have separate third-party licenses; check their sources before reuse. Public repository visibility does not by itself grant an open-source license for all code or assets.
 
 ---
 
-## 6. Getting Started
+## 简体中文
 
-### Requirements
+### 项目简介
 
-- Android Studio
-- Android SDK
-- Git
-- Android emulator or a physical Android device
+**HealthApp** 是香港城市大学（CityUHK）**EE5415 — Mobile Applications Design and Development（移动应用设计与开发）**课程第 **11 小组（Group 11）**于 2026 年开发的 Android 课程项目。
 
-### Installation
+我们的目标是实现一款**简单、直观、适合日常使用**的个人健康管理 App，而不是专业健身训练日志或医疗软件。应用将**运动记录、饮食管理、每日/每周总结、个人资料与健康目标、小猫吉祥物互动**整合在一起。
 
-**Step 1: Clone the repository**
+核心数据通过 **Room（SQLite）保存在设备本地**，正常使用不依赖云服务器、在线账号或网络连接。
 
-Clone the project using GitHub or Android Studio's version control functionality.
+### 主要功能与当前进度
 
-```bash
-git clone <REPOSITORY_URL>
+| 模块 | 当前代码中已有的功能 | 进度说明 |
+| --- | --- | --- |
+| **首页 Home** | 今日运动与卡路里概览、目标状态反馈、随记录发生互动的小猫吉祥物 | 已有实现，持续联调与优化 |
+| **运动 Exercise** | **22 种运动**（含低/中/高三档力量训练）、动作搜索、静态运动图标、按时长记录、MET 热量估算、本自然周日期选择与历史记录删除 | 核心记录功能已接入；编辑、运动计划及打卡尚待完善 |
+| **饮食 Diet** | 食物搜索、早/午/晚/加餐分类、按克数记录、热量及营养素估算、当日摄入统计和按日期查看 | 核心功能已有代码，仍需测试 |
+| **总结 Summary** | 今日运动时长、饮食摄入、运动消耗、每周运动图表及近期记录查询 | 页面代码已接入，仍需最终联调验收 |
+| **个人资料 Profile** | 个人基本信息、头像、身高体重与运动/热量目标 | 已有实现，仍需整体测试 |
+
+**功能范围说明：** 当前版本已取消睡眠记录模块。运动演示动图、AI 推荐、穿戴设备接入、云同步和多用户账号不属于本阶段交付内容。
+
+### 热量计算与数据交互
+
+运动消耗采用简化的 MET（代谢当量）估算公式：
+
+`运动估算热量（kcal）= MET × 体重（kg）× 运动时长（分钟）/ 60`
+
+饮食热量和主要营养素则根据食物营养数据及实际摄入克数估算。项目中展示的**“净热量”仅指记录的饮食摄入减去记录的运动消耗**，并不是考虑基础代谢及全部能量支出后的真实每日热量盈余。
+
+运动和饮食模块将记录保存至本地 Room 数据库；首页和总结模块通过统一的 `HealthRepository` 异步读取数据，不依赖模块之间直接传递页面状态。`CatInteractionHub` 则专门用于运动和饮食记录触发小猫互动。
+
+### 技术栈
+
+| 项目 | 技术方案 |
+| --- | --- |
+| 运行平台 | 原生 Android（最低 API 26） |
+| 开发语言 | Java 11 |
+| 用户界面 | XML、Android Views、Fragment、Material Components |
+| 本地存储 | Room / SQLite |
+| 异步数据访问 | `DatabaseExecutor`、`HealthRepository`、`RepositoryCallback` |
+| 构建配置 | Gradle Kotlin DSL（仅构建脚本使用 Kotlin） |
+| 开发与协作 | Android Studio、Git、GitHub、功能分支与 Pull Request |
+
+### 如何运行
+
+1. 安装 **Android Studio**、Android SDK 和 Git。
+2. 克隆本仓库：`git clone https://github.com/wuyuxuanvv/android-group11.git`。
+3. 使用 Android Studio 打开克隆得到的 **`android-group11`** 项目目录。
+4. 等待 Gradle Sync 完成，根据提示安装缺少的 SDK。
+5. 选择 **API 26 或以上**的 Android 模拟器或真机，运行 `app`。
+
+在仓库根目录使用 Windows PowerShell 执行：
+
+```powershell
+.\gradlew.bat testDebugUnitTest assembleDebug
 ```
 
-Replace `<REPOSITORY_URL>` with the actual URL of this repository.
+请以自己环境中的实际编译、测试和模拟器结果为准；README 不代表所有功能已通过最终验收。
 
-**Step 2: Open the project**
+### 代码结构与开发文档
 
-Open Android Studio and select the cloned project directory.
+主要源码位于 `app/src/main/java/com/example/healthapp/`：
 
-**Step 3: Synchronize Gradle**
+- `common/`：日期、热量计算、公共工具和小猫事件通知。
+- `database/`、`model/`：Room、DAO、Repository、Entity 和内置运动/食物数据。
+- `exercise/`、`diet/`：运动和饮食记录功能。
+- `home/`、`summary/`：首页小猫互动、健康概览、统计与历史记录。
+- `profile/`：个人资料与目标。
+- `app/src/main/res/`：XML 布局、静态图标和其他界面资源。
+- `docs/`：团队分工、开发规范和需求资料。
 
-Allow Android Studio to complete Gradle synchronization and download the required dependencies.
+建议先阅读 [`docs/GUIDELINES.md`](docs/GUIDELINES.md) 和 [`docs/DATABASE_USAGE.md`](docs/DATABASE_USAGE.md)。部分较早的规划文档已经过时；若文档与当前代码不一致，应核实最新实现并与模块负责人协调，不要直接修改公共数据库和接口。
 
-**Step 4: Run the application**
+### 小组协作与项目声明
 
-Select an Android emulator or connect a physical Android device.
+本项目由 **Group 11 六名成员**协作开发，涉及公共框架及资料页、运动、饮食、数据库、界面资源，以及首页与总结可视化等工作。团队通过 Git 功能分支、Pull Request 和统一的数据接口协同开发。
 
-Click **Run 'app'** in Android Studio to build and launch the application.
+我们希望本仓库不仅记录本组的开发过程，也能帮助未来修读 **EE5415** 的同学了解 Android 课程项目的设计、实现与多人协作方式。参考项目时，请遵守所在课程的学术诚信要求。
 
-> The repository is private. Access is restricted to authorized project collaborators.
-
----
-
-## 7. Development Documentation
-
-The following documents provide detailed specifications and development instructions.
-
-| Document | Description |
-|---|---|
-| `docs/PRD.md` | Product requirements and functional specifications |
-| `docs/TEAM.md` | Team responsibilities and module assignments |
-| `docs/DEVELOPMENT_GUIDE.md` | Project architecture, database structures, shared interfaces, and coding conventions |
-| `docs/MEMBER_GUIDE.md` | Individual development instructions and GitHub collaboration guidelines |
-| `AGENTS.md` | Development instructions for AI-assisted coding tools |
-
-**All team members should read the relevant documentation before modifying the project.**
-
-Changes to shared database structures, public interfaces, or core project configurations should be coordinated with the project integration maintainer.
+**免责声明：** 本项目仅用于课程学习和一般健康习惯记录，不提供医疗诊断或专业医疗建议。热量与营养数据均为估算。部分 SVG 等视觉资源可能具有独立的第三方许可，复用前应核对来源与授权；仓库公开不等于全部内容自动采用开源许可证。
 
 ---
 
-## 8. Project Scope
-
-This application is developed for educational purposes as part of the EE5415 course project at City University of Hong Kong.
-
-HealthApp is intended to support general health habit tracking and personal activity management.
-
-It is not designed to provide medical diagnoses, clinical assessments, or professional medical advice.
-
-Exercise calorie expenditure and nutritional calculations are estimates based on predefined reference data.
-
----
-
-# 简体中文
-
-## 1. 项目简介
-
-HealthApp 是一款个人健康管理安卓应用，由**香港城市大学（City University of Hong Kong，CityUHK）EE5415 课程第 11 小组**开发，属于本课程的六人合作课程设计项目。
-
-本项目旨在开发一款简单、直观且易于使用的健康管理应用，帮助用户记录日常运动、饮食和睡眠情况，并通过数据统计和目标管理，了解个人健康习惯的变化。
-
-应用将运动记录、饮食管理、睡眠管理和健康数据统计整合在同一平台中，使用户能够便捷地记录日常活动、查看历史数据，并追踪个人健康管理目标的完成情况。
-
-本项目采用 Android 原生开发技术，使用 Java 编写程序逻辑，XML 构建用户界面，Room 数据库实现本地数据持久化。
-
-应用采用离线优先设计，核心功能无需依赖服务器或互联网连接。
-
-**项目基本信息**
-
-| 项目 | 内容 |
-|---|---|
-| 所属院校 | 香港城市大学（CityUHK） |
-| 所属课程 | EE5415 |
-| 项目名称 | 个人健康管理安卓应用 |
-| 开发小组 | Group 11 |
-| 小组人数 | 6 人 |
-| 目标平台 | Android |
-| 开发语言 | Java |
-| 界面技术 | XML |
-| 本地数据库 | Room（SQLite） |
-| 开发工具 | Android Studio |
-| 版本管理 | Git & GitHub |
-
-> **当前状态：开发中**
->
-> 项目初始工程及公共开发框架已搭建完成，各成员正在按照分工逐步开发和集成具体功能模块。
-
----
-
-## 2. 主要功能
-
-HealthApp 主要包含个人资料、运动管理、饮食管理、睡眠管理和健康数据统计五个功能模块。
-
-### 2.1 个人资料管理
-
-用户可以在首次使用应用时填写个人基本信息，并设置健康管理目标。
-
-主要功能包括：
-
-- 年龄、性别、身高和体重管理。
-- 每周运动目标次数设置。
-- 每日摄入热量目标设置。
-- 每日睡眠时长目标设置。
-- 个人信息的本地保存与修改。
-
-用户的个人资料将用于运动热量估算、目标完成情况统计及其他相关功能。
-
-### 2.2 运动管理
-
-运动模块用于记录用户的日常运动情况，并帮助用户制定和执行每周运动计划。
-
-主要功能包括：
-
-- 内置运动动作库及动作演示。
-- 运动动作选择和运动时长记录。
-- 根据运动类型、运动时长和用户体重估算运动消耗热量。
-- 每周运动计划制定。
-- 运动计划打卡。
-- 运动历史记录查询。
-
-运动热量采用基于 MET（代谢当量）的简化计算方法进行估算。
-
-计算结果仅供参考，不代表精确的实际能量消耗。
-
-### 2.3 饮食管理
-
-饮食模块用于记录用户的日常饮食，并统计热量及主要营养素摄入情况。
-
-主要功能包括：
-
-- 内置食物数据库及营养信息。
-- 食物搜索与选择。
-- 根据食物重量记录实际摄入量。
-- 早餐、午餐、晚餐和加餐分类记录。
-- 每日热量及宏量营养素计算。
-- 实际摄入热量与每日热量目标对比。
-- 饮食历史记录查询。
-
-用户可以通过输入食物摄入重量，获取对应的热量和营养素估算结果。
-
-### 2.4 睡眠管理
-
-睡眠模块用于记录用户的睡眠时间，并统计睡眠时长。
-
-主要功能包括：
-
-- 手动记录入睡时间和起床时间。
-- 自动计算总睡眠时长。
-- 支持跨午夜睡眠记录。
-- 睡眠历史记录查询。
-- 实际睡眠时长与个人目标对比。
-- 基于固定规则生成简单睡眠反馈。
-
-本项目第一版不接入智能手表等穿戴设备，也不涉及复杂的睡眠阶段分析。
-
-### 2.5 首页与健康数据统计
-
-首页负责整合运动、饮食和睡眠三个模块的数据，为用户提供统一的健康管理概览。
-
-主要功能包括：
-
-- 当日运动完成次数统计。
-- 当日摄入热量汇总。
-- 最近一晚睡眠时长展示。
-- 个人健康目标完成情况。
-- 历史记录查询。
-- 每周数据变化趋势。
-- 基于实际记录的简单目标反馈。
-
-通过统一的数据统计页面，用户可以了解自己的日常健康管理情况，并追踪个人目标的完成进度。
-
----
-
-## 3. 技术架构
-
-本项目采用 Android 原生开发方案。
-
-| 技术领域 | 技术选型 |
-|---|---|
-| 编程语言 | Java |
-| 用户界面 | XML / Android Views |
-| 开发环境 | Android Studio |
-| 本地数据库 | Room（SQLite） |
-| 页面管理 | Activity + Fragment |
-| 版本管理 | Git |
-| 团队协作 | GitHub |
-
-项目采用模块化开发方式。
-
-运动、饮食、睡眠、首页及个人资料等功能模块分别由不同成员负责，各模块通过统一的数据库结构和公共接口实现数据交互。
-
-### 离线设计
-
-本项目不开发远程后端服务。
-
-用户的个人资料、运动记录、饮食记录和睡眠记录均保存在设备本地。
-
-核心功能无需依赖云端数据库、在线账号系统或外部 AI 服务。
-
----
-
-## 4. 项目结构
-
-项目采用统一的 Android 工程，各成员在对应的功能模块中独立开发。
-
-主要目录包括：
-
-- `common/`：公共接口及工具类。
-- `database/`：Room 数据库基础配置和数据访问接口。
-- `model/`：公共数据模型。
-- `profile/`：个人资料模块。
-- `exercise/`：运动管理模块。
-- `diet/`：饮食管理模块。
-- `sleep/`：睡眠管理模块。
-- `home/`：首页与数据统计模块。
-- `extra/`：扩展功能模块。
-- `docs/`：项目需求、分工及开发规范文档。
-
-详细目录结构及代码使用方式请参考：
-
-`docs/DEVELOPMENT_GUIDE.md`
-
----
-
-## 5. 团队分工
-
-本项目由 Group 11 六名成员合作开发。
-
-| 成员 | 负责内容 |
-|---|---|
-| 成员 1 | 公共代码框架、数据库基础结构、页面导航、个人资料及最终项目集成 |
-| 成员 2 | 运动记录、热量估算、每周运动计划与打卡 |
-| 成员 3 | 食物数据库、饮食记录、营养计算及热量目标管理 |
-| 成员 4 | 睡眠记录、睡眠时长计算及睡眠评价 |
-| 成员 5 | 首页、每日及每周统计、历史记录与趋势展示 |
-| 成员 6 | 目标推荐、每日提醒、数据管理及应用测试 |
-
-所有成员使用同一个 Android 项目进行开发，并遵循统一的数据结构、模块接口及代码管理规范。
-
-各成员在独立的 Git 分支中完成对应功能，通过 Pull Request 将代码合并至主分支。
-
----
-
-## 6. 项目运行
-
-### 环境要求
-
-- Android Studio
-- Android SDK
-- Git
-- Android 模拟器或安卓实体设备
-
-### 运行步骤
-
-**第一步：获取项目**
-
-通过 GitHub 下载或克隆本仓库。
-
-```bash
-git clone <REPOSITORY_URL>
-```
-
-将 `<REPOSITORY_URL>` 替换为当前仓库的实际地址。
-
-**第二步：打开项目**
-
-在 Android Studio 中打开克隆后的项目根目录。
-
-**第三步：同步 Gradle**
-
-等待 Android Studio 完成 Gradle Sync，并下载所需依赖。
-
-**第四步：运行应用**
-
-启动 Android 模拟器或连接安卓实体设备。
-
-点击 Android Studio 中的 **Run 'app'**，编译并运行应用。
-
-> 本仓库为私有仓库，仅向获得授权的项目组成员开放访问权限。
-
----
-
-## 7. 开发文档
-
-项目提供以下文档，供小组成员查阅。
-
-| 文档 | 主要内容 |
-|---|---|
-| `docs/PRD.md` | 产品需求及功能说明 |
-| `docs/TEAM.md` | 六人分工及模块开发任务 |
-| `docs/DEVELOPMENT_GUIDE.md` | 项目架构、数据库结构、公共接口及代码规范 |
-| `docs/MEMBER_GUIDE.md` | 各成员负责的代码文件、开发指引及 GitHub 操作说明 |
-| `AGENTS.md` | AI 辅助编程工具需要遵守的项目开发规范 |
-
-**所有成员在开始开发前，应先阅读相关开发文档。**
-
-如需修改公共数据库结构、统一接口或核心工程配置，应提前与负责项目集成的成员沟通，避免影响其他模块的正常运行。
-
----
-
-## 8. 项目声明
-
-本项目为**香港城市大学 EE5415 课程设计（Course Project）**，由 Group 11 六名学生合作开发，主要用于安卓应用开发、软件工程实践及课程学习。
-
-HealthApp 旨在提供一般性的健康习惯记录和个人活动管理功能，不提供医疗诊断、临床评估或专业医疗建议。
-
-应用中的运动热量估算及饮食营养计算基于预设参考数据，仅供一般健康管理参考。
-
----
-
-**City University of Hong Kong · EE5415 · Group 11**
-
-*HealthApp — Track Your Habits, Build a Healthier Life.*
+**CityUHK · EE5415 · Group 11 · 2026**
