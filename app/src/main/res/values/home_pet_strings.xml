@@ -1,0 +1,9 @@
+<resources>
+    <string name="home_cat_pet_desc">像素小猫和棕色碗</string>
+    <string name="home_cat_pet_loading">正在查看今日小鱼干奖励…</string>
+    <string name="home_cat_pet_idle">小猫正在等你 · 今日摄入低于运动估算消耗时可获得小鱼干</string>
+    <string name="home_cat_pet_empty">今日还没有记录，小猫在碗边等你</string>
+    <string name="home_cat_pet_reward">获得今日小鱼干！小猫开饭啦</string>
+    <string name="home_cat_pet_claimed">今日小鱼干已领取，小猫开心地陪着你</string>
+    <string name="home_cat_pet_error">今日奖励数据读取失败，返回主页可重试</string>
+</resources>

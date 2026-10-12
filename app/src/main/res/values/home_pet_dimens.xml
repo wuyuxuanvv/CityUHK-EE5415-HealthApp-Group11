@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="home_cat_pet_height">240dp</dimen>
+    <dimen name="home_cat_pet_status_gap">8dp</dimen>
+</resources>
