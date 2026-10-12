@@ -24,7 +24,8 @@ import com.example.healthapp.model.UserProfile;
                 Food.class,
                 FoodRecord.class
         },
-        version = 2,
+        // v3: Exercise + kcal_per_set_per_kg, ExerciseRecord + sets/reps_per_set, Food + category.
+        version = 3,
         exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "health_app.db";
